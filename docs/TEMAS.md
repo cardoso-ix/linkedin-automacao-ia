@@ -1,48 +1,52 @@
-# 40 temas (dia do mês)
+# Temas — post das 08:00 (30 temas / mês)
 
-O HTTP 3 usa `{{formatDate(now; "D")}}` para escolher o tema.
+> Índice = **dia do mês** em `America/Sao_Paulo`. **Dia N = tema N**.
+>
+> ```js
+> const dayOfMonth = $now.setZone('America/Sao_Paulo').day;
+> const themeIndex = ((dayOfMonth - 1) % 30) + 1; // 1–30; dia 31 → tema 1
+> ```
+>
+> Em fevereiro (28/29 dias) só rodam os temas 1–28/29 naquele mês.  
+> Usado pelo nó `Build Theme Context` do workflow Post Diario (DeepSeek + capa FLUX).
 
-| Dia | Tema |
-|-----|------|
-| 1 | 90% confundem chatbot com agente de IA |
-| 2 | Por que agentes de IA viraram infraestrutura |
-| 3 | Anatomia: LLM + tools + memória + orquestração |
-| 4 | O erro #1 ao montar o primeiro agente |
-| 5 | Make vs n8n vs Zapier para agentes |
-| 6 | Function calling: quando IA executa de verdade |
-| 7 | Memória curta vs longa em agentes |
-| 8 | Agentes multi-etapa: time digital |
-| 9 | Quanto custa rodar um agente |
-| 10 | RPA vs agente de IA |
-| 11 | Prompt engineering para agentes |
-| 12 | 7 sinais de que você precisa de um agente |
-| 13 | Agentes no atendimento |
-| 14 | Automatizar LinkedIn com agentes |
-| 15 | Como testar agente antes de produção |
-| 16 | API keys e segurança |
-| 17 | Integrações essenciais |
-| 18 | Do zero ao agente em 60 minutos |
-| 19 | Agentes analisando dados |
-| 20 | Documentar fluxos para escalar |
-| 21 | Meta-agentes |
-| 22 | OpenAI vs Groq vs Gemini |
-| 23 | IA generativa dentro do agente |
-| 24 | O que automatizar primeiro |
-| 25 | Tendências 12 meses |
-| 26 | Open source vs closed |
-| 27 | Metrologia + IA |
-| 28 | Ética em agentes |
-| 29 | Stack Make + OpenAI |
-| 30 | 5 lições em 30 dias |
-| 31 | Por que agentes falham |
-| 32 | Human in the loop |
-| 33 | Agentes para marketing e conteúdo |
-| 34 | Como medir ROI de um agente |
-| 35 | Futuro do trabalho |
-| 36 | Agentes encadeados vs único |
-| 37 | Dados ruins = agente ruim |
-| 38 | Escolher o modelo certo |
-| 39 | Automação inteligente vs burra |
-| 40 | Manifesto: agentes são vantagem |
+| Turno | Horário | Lista | Ângulo |
+|-------|---------|-------|--------|
+| Manhã | 08:00 | IA / agentes / processo (30) | Didático + experiência prática |
 
-> Dias 1–31 do mês usam os temas 1–31. Temas 32–40 ficam como reserva / rotação manual se quiser expandir.
+---
+
+## LISTA — 30 dias do mês
+
+| # | Tema |
+|---|------|
+| 1 | Por que IA generativa erra menos quando o processo por trás dela é maduro |
+| 2 | Agentes de IA não são scripts com nome bonito, e isso muda tudo |
+| 3 | Automatizar antes de validar é o erro mais caro que já vi na indústria |
+| 4 | O que a indústria pode aprender com quem já errou feio usando IA generativa |
+| 5 | O que aprendi construindo meu primeiro agente com falhas reais |
+| 6 | IA não resolve processo mal desenhado, ela só acelera o problema |
+| 7 | IA generativa não substitui julgamento técnico, ela acelera a decisão certa |
+| 8 | Orquestração de agentes: o problema que ninguém resolve na teoria |
+| 9 | O que a automação industrial me ensinou antes de eu escrever a primeira linha de Python |
+| 10 | O custo invisível de usar IA generativa sem entender o processo por trás |
+| 11 | Por que um agente de IA sem governança vira um risco, não uma solução |
+| 12 | Como saber se um processo está pronto para receber IA |
+| 13 | Como a IA generativa está mudando a forma de documentar processos industriais |
+| 14 | A diferença entre um agente autônomo e um agente confiável |
+| 15 | Automação com IA exige métrica antes, não depois |
+| 16 | A diferença entre usar IA generativa e depender dela |
+| 17 | Como sub-agentes especializados resolvem problemas que um agente único não resolve |
+| 18 | Por que a maturidade operacional decide o sucesso da automação, não a tecnologia |
+| 19 | O que ninguém te conta sobre alucinação em modelos generativos aplicados à operação |
+| 20 | O erro mais comum ao dar autonomia demais para um agente de IA |
+| 21 | O que muda quando a automação para de ser tarefa de TI e vira responsabilidade de todos |
+| 22 | IA generativa como copiloto, não como piloto automático em decisões críticas |
+| 23 | Agentes de IA na indústria: onde funciona e onde ainda é promessa |
+| 24 | Automação bem feita não elimina pessoas, elimina atrito |
+| 25 | Por que times técnicos ainda hesitam em confiar em IA generativa |
+| 26 | O que testar antes de colocar um agente de IA em produção |
+| 27 | O que aprendi automatizando processos críticos sem gerar caos |
+| 28 | O papel da IA generativa na redução de retrabalho em relatórios operacionais |
+| 29 | Agentes de IA e o problema da memória: o que fica, o que se perde |
+| 30 | Segurança da informação e automação com IA: por que isso não pode ser opcional |

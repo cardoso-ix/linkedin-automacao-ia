@@ -1,92 +1,91 @@
-# Automação LinkedIn — Agentes de IA
+# Automação LinkedIn — Agentes de IA (n8n)
 
-Automação diária de conteúdo no LinkedIn com **Make.com**, **OpenAI** (texto + imagem) e publicação automática às **8h** (America/Sao_Paulo).
+Sistema em produção que publica um post diário no LinkedIn (texto + capa editorial) e responde comentários nos posts monitorados — orquestrado no **n8n** (VPS).
 
-Foco: **agentes de IA e automação inteligente** — posts humanizados para alcance (impressões, comentários, seguidores), com rota de **só texto** na maior parte da semana e **texto + charge editorial** em dias específicos.
+| Fluxo | O que faz | Stack |
+|-------|-----------|--------|
+| **Post diário 08:00** | Tema do dia → texto → capa → LinkedIn | OpenRouter **DeepSeek-V4-Flash** + **FLUX.2 Pro** |
+| **Resposta a comentários** | Sheets + HTML → reply no post | OpenRouter **DeepSeek-V4-Flash** |
+
+Roteiro da demo: [docs/PRESENTACAO.md](docs/PRESENTACAO.md)
 
 **Portfólio** — [cardoso-ix.github.io/Portifolio](https://cardoso-ix.github.io/Portifolio/) · **LinkedIn** — [eduardo-cardoso](https://www.linkedin.com/in/eduardo-cardoso-213a02267)
 
-## O que faz
-
-Todo dia às 8h:
-
-1. **GPT-4o** gera o post em português (gancho forte, lista, perguntas, hashtags)
-2. **Router** decide o formato pelo dia da semana
-3. **Seg–qua, sex–sáb:** publica **só texto** (Media Type Empty)
-4. **Qui e dom:** **GPT-4o-mini** gera prompt de charge → **gpt-image-1.5** gera a imagem → LinkedIn **Article** com thumbnail
-5. Calendário de **40 temas** rotativos por dia do mês
-
 ## Arquitetura
 
+| Workflow | ID | URL |
+|----------|----|-----|
+| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo |
+| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z |
+
+> Resposta via Gmail (`5xkPzzTcKwdsPymn`) — **arquivado** (fora do portfólio).
+
 ```
-Schedule 8h (America/Sao_Paulo)
-        │
-        ▼
-   HTTP 3 — OpenAI GPT-4o (texto do post)
-        │
-        ▼
-     Router
-        │
-        ├── Charge (qui / dom)
-        │      → HTTP 6 (prompt charge)
-        │      → OpenAI Generate Image (gpt-image-1.5)
-        │      → LinkedIn Article + thumbnail
-        │
-        └── Texto (fallback)
-               → LinkedIn Empty (só conteúdo)
+08:00  Post Diario:
+         anti-dupe → Dia N (tema 1–30) → DeepSeek-V4-Flash (OpenRouter)
+         → sanitize → capa FLUX.2 Pro (8 estilos, sem texto)
+         → LinkedIn IMAGE  |  fallback: só texto
+         → Data Table + Telegram (ok / skip / fail)
+
+*/2m   Resposta Comentarios Post:
+         Sheets monitor → HTML → parse → DeepSeek-V4-Flash → HTTP reply
 ```
+
+Timezone: **America/Sao_Paulo**.
+
+**Prova recente (post):** execução `5712` — post com imagem `urn:li:share:7489362507237675008`.
+
+## Docs
+
+| Doc | Conteúdo |
+|-----|----------|
+| [docs/FLUXO.md](docs/FLUXO.md) | Arquitetura ativa nó a nó |
+| [docs/TEMAS.md](docs/TEMAS.md) | 30 temas do mês (Dia N = tema N) |
+| [docs/IMAGENS-LOTE.md](docs/IMAGENS-LOTE.md) | Spec da capa editorial + 8 estilos |
+| [docs/SETUP.md](docs/SETUP.md) | Credenciais e ativação |
+| [docs/CHECKLIST.md](docs/CHECKLIST.md) | Checklist antes de ligar |
+| [docs/TUTORIAL.md](docs/TUTORIAL.md) | Tutorial rápido |
+| [docs/VPS.md](docs/VPS.md) | Acesso Hostinger / Docker |
+| [docs/STACK-GRATUITA.md](docs/STACK-GRATUITA.md) | Modo free **opcional / legado** (não é o default) |
+
+## Prompts e skill
+
+| Arquivo | Uso |
+|---------|-----|
+| `prompts/post-texto.json` | Briefing “Previsibilidade na Prática” → DeepSeek via OpenRouter |
+| `prompts/post-imagem-capa.json` | Capa editorial FLUX.2 Pro (sem texto + 8 estilos) |
+| `prompts/resposta-comentario.json` | Reply a comentários (DeepSeek via OpenRouter) |
+| `skills/linkedin-resposta-comentario/` | Skill Cursor da voz de reply |
+
+## Regras do post
+
+- Nicho: IA aplicada, agentes de IA ou IA generativa
+- 1000–1800 caracteres (parágrafos corridos)
+- Tom humano; sem travessão, emojis ou jargão vazio
+- Sem markdown (`**`) e sem URLs
+- No máximo 3 hashtags (opcionais)
+- Fechar com reflexão aberta ou convite leve ao comentário
 
 ## Stack
 
 | Camada | Tecnologia |
 |--------|------------|
-| Orquestração | Make.com |
-| Texto | OpenAI GPT-4o |
-| Prompt de imagem | OpenAI GPT-4o-mini |
-| Imagem | OpenAI gpt-image-1.5 |
-| Publicação | LinkedIn (OpenID Connect) |
-| Agendamento | Schedule diário 08:00 |
+| Orquestração | n8n (VPS Hostinger) |
+| Texto do post | OpenRouter **DeepSeek-V4-Flash** (`deepseek/deepseek-v4-flash`) |
+| Imagem do post | OpenRouter **FLUX.2 Pro** (`black-forest-labs/flux.2-pro`) via `/api/v1/images` |
+| Reply de comentário | OpenRouter **DeepSeek-V4-Flash** (mesmo modelo) |
+| Credencial | **OpenRouter account** (texto post, capa e reply) |
+| Publicação | LinkedIn OAuth (IMAGE ou texto) + REST comments |
+| Memória de posts | Data Table `LinkedIn Posts Diario` |
+| Monitor de replies | Google Sheets (monitor + already replied) |
+| Alertas | Telegram (ok / skip / fail; reflete `hasCover`) |
 
-## Destaques
+## Como validar
 
-- Texto **sem markdown** (LinkedIn não renderiza `**negrito**`)
-- Tom humanizado, sem saudação forçada (“oi pessoal”)
-- Gancho nas primeiras 2 linhas + perguntas que geram comentário
-- Charge editorial premium (estilo charge BR / Wired), não stock photo
-- Custo estimado ~**US$ 2/mês** com 1 post/dia (cabe em crédito OpenAI baixo)
+1. Abrir o workflow Post Diario → **Execute once** (ou esperar 08:00).
+2. Se já houver post do dia → Telegram **skip** (anti-dupe).
+3. Caso contrário → LinkedIn com capa FLUX; Telegram “Texto + capa FLUX.2 Pro”.
+4. Reply: abrir Resposta Comentarios Post → conferir nó **Generate Reply Text** com DeepSeek OpenRouter → Execute once / aguardar poll.
+5. Conferir Executions no n8n.
 
-## Estrutura do repositório
-
-```
-linkedin-automacao-ia/
-├── README.md
-├── docs/
-│   ├── SETUP.md              # Passo a passo no Make
-│   ├── TEMAS.md              # 40 temas do calendário
-│   └── CHECKLIST.md          # Validação e erros comuns
-├── prompts/
-│   ├── http3-texto.json      # Body GPT-4o (texto)
-│   └── http6-imagem.json     # Body GPT-4o-mini (prompt charge)
-└── assets/
-    └── preview.png           # Preview para portfólio
-```
-
-## Como usar
-
-1. Conta Make + API key OpenAI + LinkedIn conectado
-2. Monte o fluxo conforme [docs/SETUP.md](docs/SETUP.md)
-3. Cole os JSONs de [prompts/](prompts/) nos módulos HTTP
-4. Ative o cenário às 8h
-
-## Custo estimado (1 post/dia)
-
-| Item | Mês |
-|------|-----|
-| GPT-4o (texto) | ~US$ 0,90 |
-| GPT-4o-mini (prompt) | ~US$ 0,03 |
-| gpt-image-1.5 (2×/semana) | ~US$ 1,00 |
-| **Total** | **~US$ 2,00** |
-
-## Licença
-
-Uso pessoal / portfólio. Adapte livremente.
+> Mudanças no canvas ficam em **draft** até **Publish**. Este repositório não contém API keys.

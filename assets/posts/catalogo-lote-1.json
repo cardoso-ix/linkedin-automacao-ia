@@ -1,0 +1,57 @@
+{
+  "lote": 1,
+  "timezone": "America/Sao_Paulo",
+  "provider": "Inner AI (manual)",
+  "items": [
+    {
+      "order": 1,
+      "postDate": "2026-07-30",
+      "themeIndex": 31,
+      "tema": "Por que agentes de IA falham",
+      "style": "infografico",
+      "file": "assets/posts/2026-07-30.png",
+      "imageUrl": null,
+      "status": "aguardando"
+    },
+    {
+      "order": 2,
+      "postDate": "2026-07-31",
+      "themeIndex": 32,
+      "tema": "Human in the loop na IA",
+      "style": "infografico",
+      "file": "assets/posts/2026-07-31.png",
+      "imageUrl": null,
+      "status": "arquivo_local_pronto"
+    },
+    {
+      "order": 3,
+      "postDate": "2026-08-01",
+      "themeIndex": 33,
+      "tema": "Agentes de IA para marketing e conteúdo",
+      "style": "cartoon_editorial",
+      "file": "assets/posts/2026-08-01.png",
+      "imageUrl": null,
+      "status": "aguardando"
+    },
+    {
+      "order": 4,
+      "postDate": "2026-08-02",
+      "themeIndex": 34,
+      "tema": "Como medir ROI de inteligência artificial",
+      "style": "dashboard_tech",
+      "file": "assets/posts/2026-08-02.png",
+      "imageUrl": null,
+      "status": "aguardando"
+    },
+    {
+      "order": 5,
+      "postDate": "2026-08-03",
+      "themeIndex": 35,
+      "tema": "Futuro do trabalho com IA",
+      "style": "futurista_clean",
+      "file": "assets/posts/2026-08-03.png",
+      "imageUrl": null,
+      "status": "aguardando"
+    }
+  ]
+}

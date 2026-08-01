@@ -1,0 +1,21 @@
+{
+  "id": "q28d2xJlAgvMpZ9Z",
+  "name": "LinkedIn Resposta Comentarios Post",
+  "active": true,
+  "description": "A cada 2 min: Sheets monitor + HTML comments → DeepSeek-V4-Flash (OpenRouter) → reply LinkedIn → mark done. Sem Gmail.",
+  "url": "https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z",
+  "poll": "every 2 minutes",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "openrouter",
+  "credential": "OpenRouter account",
+  "llmPattern": "AI Agent Generate Reply Text + lmChatOpenRouter DeepSeek V4 Flash",
+  "promptFile": "prompts/resposta-comentario.json",
+  "skill": "skills/linkedin-resposta-comentario/",
+  "sections": [
+    "Schedule/descoberta: Every 2 min → Sheets → Fresh 48h → Loop Posts → Fetch HTML → Parse → Filter New",
+    "Resposta: Loop Comments → Generate Reply Text → Prepare → Post LinkedIn Reply → Mark Done/Error → Wait 20s",
+    "Webhook Fill Comments (manual/demo)"
+  ],
+  "note": "Gmail workflow 5xkPzzTcKwdsPymn arquivado. Para editar via MCP: Settings → Available in MCP = ON.",
+  "mcpStatus": "requires Available in MCP enabled before agent can update canvas"
+}

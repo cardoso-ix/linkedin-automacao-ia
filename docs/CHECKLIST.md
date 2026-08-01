@@ -1,28 +1,39 @@
-# Checklist
+# Checklist — arquitetura ativa
 
 ## Antes de ativar
 
-- [ ] API key OpenAI nos Headers HTTP 3 e HTTP 6
-- [ ] Body HTTP 3 colado (sem markdown / asteriscos)
-- [ ] Body HTTP 6 fixo (sem mapear HTTP 3)
-- [ ] Router: Charge = qui/dom; Texto = fallback Yes
-- [ ] LinkedIn texto = Empty
-- [ ] LinkedIn charge = Article + Response Image Data
-- [ ] Schedule 08:00 America/Sao_Paulo
-- [ ] Run once OK
-- [ ] Cenário ON
+- [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — OpenRouter (texto + capa) + LinkedIn
+- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — DeepSeek OpenRouter + Sheets/HTML + LinkedIn
+- [ ] Credencial **OpenRouter account** no DeepSeek (post e reply) **e** no nó Generate Cover Flux Pro
+- [ ] Modelos: `deepseek/deepseek-v4-flash` + `black-forest-labs/flux.2-pro`
+- [ ] Stickies de reply sem menção a GPT-3.5 (usar DeepSeek-V4-Flash)
+- [ ] Resposta via Gmail permanece **arquivado**
+- [ ] Timezone `America/Sao_Paulo`
+- [ ] Schedule post: `0 8 * * *`
+- [ ] Data Table **LinkedIn Posts Diario** ok (anti-dupe)
+- [ ] Draft publicado (**Publish**) após mudanças no canvas
 
-## Erros comuns
+## Regras do post
 
-| Erro | Solução |
-|------|---------|
-| Asteriscos no post | Reforçar regra FORMATACAO no HTTP 3 |
-| Bad control character JSON | HTTP 6 sem mapear HTTP 3 |
-| 401 Unauthorized | Bearer sk-... correto |
-| LinkedIn sem imagem | Thumbnail = Response Image Data |
-| Quinta cai em texto | Filtro Charge = Thursday OR Sunday primeiro |
+- [ ] Sem markdown / asteriscos
+- [ ] Sem URLs no corpo
+- [ ] 1000–1800 caracteres (parágrafos corridos)
+- [ ] Sem travessão / emojis / jargão vazio
+- [ ] No máximo 3 hashtags (opcionais)
+- [ ] Fechar com reflexão ou convite leve ao comentário
+- [ ] Capa **sem texto** na arte (8 estilos round-robin)
 
-## Pós-publicação (manual)
+## Respostas a comentários
 
-- [ ] Comentar no próprio post em 5–10 min (cascata)
-- [ ] Responder comentários em até 2–4 h
+- [ ] Generate Reply Text = DeepSeek-V4-Flash (OpenRouter)
+- [ ] Tom da skill `linkedin-resposta-comentario`
+- [ ] Wait 20s entre replies
+- [ ] Confirmar reply no LinkedIn + mark done no Sheets
+
+## Validação rápida
+
+1. Executar **Post Diario Texto** (1x) — ou conferir skip se já postou hoje
+2. Conferir Telegram: “Texto + capa FLUX.2 Pro” (ou aviso só texto se fallback)
+3. Executar **Resposta Comentarios Post** (1x) ou aguardar poll 2 min
+4. Conferir Executions no n8n
+5. Lembrete: mudanças no canvas ficam em **draft** até Publish

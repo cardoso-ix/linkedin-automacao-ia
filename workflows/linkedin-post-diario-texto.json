@@ -1,0 +1,57 @@
+{
+  "id": "ysHFWIV0tGWJbhjo",
+  "name": "LinkedIn Post Diario Texto",
+  "active": true,
+  "description": "08:00 SP: Dia N (1–30) + DeepSeek-V4-Flash + capa FLUX.2 Pro (OpenRouter). Fallback só texto. Anti-dupe + Telegram ok/skip/fail.",
+  "url": "https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo",
+  "timezone": "America/Sao_Paulo",
+  "schedule": "0 8 * * *",
+  "nodes": [
+    "Daily 8h Sao Paulo",
+    "Get Recent Posts",
+    "Already Posted Today",
+    "IF Already Posted",
+    "Build Theme Context",
+    "Generate Post Text",
+    "DeepSeek V4 Flash",
+    "Sanitize Post Text",
+    "Build Cover Prompt",
+    "Generate Cover Flux Pro",
+    "Prepare Flux Binary",
+    "Check Cover Ready",
+    "IF Cover OK",
+    "Post With Image",
+    "Post Text Only",
+    "Save Posted Row",
+    "Normalize Post Meta",
+    "Save Posts Monitor",
+    "Build Notify Message",
+    "Notify Telegram",
+    "Skip Already Posted",
+    "Build Skip Notify",
+    "Notify Telegram Skip",
+    "Build Fail Notify"
+  ],
+  "model": "deepseek/deepseek-v4-flash",
+  "textProvider": "openrouter",
+  "imageModel": "black-forest-labs/flux.2-pro",
+  "imageProvider": "openrouter",
+  "imageEndpoint": "https://openrouter.ai/api/v1/images",
+  "credential": "OpenRouter account (texto + imagem)",
+  "fallback": "post_text_only",
+  "themes": "docs/TEMAS.md (Dia N = tema N, 30/mês)",
+  "coverStyles": 8,
+  "prompts": {
+    "text": "prompts/post-texto.json",
+    "cover": "prompts/post-imagem-capa.json"
+  },
+  "dataTable": {
+    "name": "LinkedIn Posts Diario",
+    "id": "mayfOqKniH3iFbiw"
+  },
+  "verifiedExecution": {
+    "id": 5712,
+    "shareUrn": "urn:li:share:7489362507237675008"
+  },
+  "note": "2026-08-01: nós capa (não infográfico); anti-dupe restaurado; stickies e docs alinhados ao estado real."
+}
