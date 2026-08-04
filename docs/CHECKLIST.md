@@ -1,17 +1,20 @@
-# Checklist — arquitetura ativa
+# Checklist — arquitetura ativa (Alibaba Model Studio)
 
 ## Antes de ativar
 
-- [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — OpenRouter (texto + capa) + LinkedIn
-- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — DeepSeek OpenRouter + Sheets/HTML + LinkedIn
-- [ ] Credencial **OpenRouter account** no DeepSeek (post e reply) **e** no nó Generate Cover Flux Pro
-- [ ] Modelos: `deepseek/deepseek-v4-flash` + `black-forest-labs/flux.2-pro`
-- [ ] Stickies de reply sem menção a GPT-3.5 (usar DeepSeek-V4-Flash)
+- [ ] Cota gratuita Singapore liberada: `qwen-plus`, `qwen-flash`, `qwen-image-2.0`
+- [ ] **Free Quota Only** ligado (opcional, evita cobrança além da cota)
+- [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — Alibaba (texto + capa) + LinkedIn
+- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — Qwen-Flash + Sheets/HTML + LinkedIn
+- [ ] Credencial **Alibaba Model Studio** no chat (post e reply) **e** no HTTP da capa
+- [ ] Base URL chat: `…/compatible-mode/v1` · imagem: `…/multimodal-generation/generation`
+- [ ] Stickies de reply sem menção a GPT-3.5 / OpenRouter / DeepSeek
 - [ ] Resposta via Gmail permanece **arquivado**
 - [ ] Timezone `America/Sao_Paulo`
 - [ ] Schedule post: `0 8 * * *`
 - [ ] Data Table **LinkedIn Posts Diario** ok (anti-dupe)
 - [ ] Draft publicado (**Publish**) após mudanças no canvas
+- [ ] API key **não** está no GitHub (só no n8n)
 
 ## Regras do post
 
@@ -25,15 +28,16 @@
 
 ## Respostas a comentários
 
-- [ ] Generate Reply Text = DeepSeek-V4-Flash (OpenRouter)
+- [ ] Generate Reply Text = Qwen-Flash (Alibaba)
 - [ ] Tom da skill `linkedin-resposta-comentario`
 - [ ] Wait 20s entre replies
 - [ ] Confirmar reply no LinkedIn + mark done no Sheets
 
 ## Validação rápida
 
-1. Executar **Post Diario Texto** (1x) — ou conferir skip se já postou hoje
-2. Conferir Telegram: “Texto + capa FLUX.2 Pro” (ou aviso só texto se fallback)
-3. Executar **Resposta Comentarios Post** (1x) ou aguardar poll 2 min
-4. Conferir Executions no n8n
-5. Lembrete: mudanças no canvas ficam em **draft** até Publish
+1. Ping `qwen-plus` no n8n — se `Unpurchased`, liberar no console
+2. Executar **Post Diario Texto** (1x) — ou conferir skip se já postou hoje
+3. Conferir Telegram: “Texto + capa qwen-image-2.0” (ou aviso só texto se fallback)
+4. Executar **Resposta Comentarios Post** (1x) ou aguardar poll 2 min
+5. Conferir Executions no n8n
+6. Lembrete: mudanças no canvas ficam em **draft** até Publish

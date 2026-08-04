@@ -2,13 +2,14 @@
   "id": "q28d2xJlAgvMpZ9Z",
   "name": "LinkedIn Resposta Comentarios Post",
   "active": true,
-  "description": "A cada 2 min: Sheets monitor + HTML comments → DeepSeek-V4-Flash (OpenRouter) → reply LinkedIn → mark done. Sem Gmail.",
+  "description": "A cada 2 min: Sheets monitor + HTML comments → Qwen-Flash (Alibaba Model Studio) → reply LinkedIn → mark done. Sem Gmail.",
   "url": "https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z",
   "poll": "every 2 minutes",
-  "model": "deepseek/deepseek-v4-flash",
-  "provider": "openrouter",
-  "credential": "OpenRouter account",
-  "llmPattern": "AI Agent Generate Reply Text + lmChatOpenRouter DeepSeek V4 Flash",
+  "model": "qwen-flash",
+  "provider": "alibaba-model-studio",
+  "baseUrl": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
+  "credential": "Alibaba Model Studio (OpenAI-compatible)",
+  "llmPattern": "AI Agent Generate Reply Text + OpenAI Chat Model (base URL Alibaba) qwen-flash",
   "promptFile": "prompts/resposta-comentario.json",
   "skill": "skills/linkedin-resposta-comentario/",
   "sections": [
@@ -16,6 +17,10 @@
     "Resposta: Loop Comments → Generate Reply Text → Prepare → Post LinkedIn Reply → Mark Done/Error → Wait 20s",
     "Webhook Fill Comments (manual/demo)"
   ],
-  "note": "Gmail workflow 5xkPzzTcKwdsPymn arquivado. Para editar via MCP: Settings → Available in MCP = ON.",
+  "activationRequired": [
+    "Liberar qwen-flash na cota gratuita Singapore",
+    "Credencial n8n Alibaba (mesma key da workspace)"
+  ],
+  "note": "Gmail workflow 5xkPzzTcKwdsPymn arquivado. 2026-08-04: reply via qwen-flash (Alibaba), sem OpenRouter. Para editar via MCP: Settings → Available in MCP = ON.",
   "mcpStatus": "requires Available in MCP enabled before agent can update canvas"
 }

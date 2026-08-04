@@ -133,7 +133,7 @@ Site estático/Next pode ir na **Vercel** (mais simples) e a VPS ficar só para 
 
 ## Stack em produção (resumo)
 
-O n8n nesta VPS roda o post diário e o reply a comentários com **OpenRouter DeepSeek-V4-Flash** (capa do post: FLUX.2 Pro). Resposta via Gmail está arquivada. Detalhes: [FLUXO.md](FLUXO.md).
+O n8n nesta VPS roda o post diário e o reply a comentários com **Alibaba Qwen-Plus / Qwen-Flash** (capa do post: **qwen-image-2.0**). Resposta via Gmail está arquivada. Detalhes: [FLUXO.md](FLUXO.md) · [SETUP.md](SETUP.md).
 
 ## Resumo
 

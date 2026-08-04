@@ -11,17 +11,17 @@ Especialista em IA precisa de presença constante no LinkedIn, mas escrever, dia
 
 | Fluxo | O que acontece no n8n |
 |-------|------------------------|
-| **Post 08:00** | Tema Dia N → DeepSeek-V4-Flash (texto) → FLUX.2 Pro (capa editorial, 8 estilos, sem texto) → LinkedIn IMAGE ou fallback só texto → Data Table + Telegram |
-| **Reply ~2 min** | Sheets monitor → HTML do post → parse de comentários → DeepSeek-V4-Flash → reply no LinkedIn → mark done |
+| **Post 08:00** | Tema Dia N → Qwen-Plus (texto) → qwen-image-2.0 (capa editorial, 8 estilos, sem texto) → LinkedIn IMAGE ou fallback só texto → Data Table + Telegram |
+| **Reply ~2 min** | Sheets monitor → HTML do post → parse de comentários → Qwen-Flash → reply no LinkedIn → mark done |
 
 ```
 08:00  Post Diario Texto (ysHFWIV0tGWJbhjo)
-         anti-dupe → Dia N (1–30) → DeepSeek-V4-Flash
-         → capa FLUX.2 Pro (8 estilos) → LinkedIn
+         anti-dupe → Dia N (1–30) → Qwen-Plus
+         → capa qwen-image-2.0 (8 estilos) → LinkedIn
          → Telegram ok / skip / fail
 
 */2m   Resposta Comentarios Post (q28d2xJlAgvMpZ9Z)
-         Sheets → HTML → parse → DeepSeek-V4-Flash
+         Sheets → HTML → parse → Qwen-Flash
          → HTTP reply → Sheets tracking
 ```
 
@@ -36,23 +36,23 @@ Especialista em IA precisa de presença constante no LinkedIn, mas escrever, dia
 
 ## Fala-chave (1 min)
 
-> “O Cursor foi onde eu desenhei o sistema. Em produção, o n8n orquestra dois fluxos: às 08:00 escolhe o tema do dia, gera o texto com DeepSeek-V4-Flash via OpenRouter e uma capa editorial com FLUX.2 Pro — ilustração abstrata sem texto, oito estilos em rotação — e publica no LinkedIn. Em paralelo, a cada dois minutos o segundo fluxo monitora posts recentes, lê os comentários no HTML e responde com o mesmo DeepSeek, no tom da newsletter. Se a imagem falhar, o texto sai mesmo assim. Gmail de reply ficou no arquivo.”
+> “O Cursor foi onde eu desenhei o sistema. Em produção, o n8n orquestra dois fluxos: às 08:00 escolhe o tema do dia, gera o texto com Qwen-Plus na Alibaba Cloud (cota gratuita Singapore) e uma capa editorial com qwen-image-2.0 — ilustração abstrata sem texto, oito estilos em rotação — e publica no LinkedIn. Em paralelo, a cada dois minutos o segundo fluxo monitora posts recentes, lê os comentários no HTML e responde com Qwen-Flash, no tom da newsletter. Se a imagem falhar, o texto sai mesmo assim. Gmail de reply ficou no arquivo.”
 
 ## Como testar o post com imagem
 
 1. Garantir que ainda **não** há post do dia em Posts Diario (senão skip)  
 2. **Execute once** no workflow (ou esperar 08:00)  
-3. Conferir LinkedIn + Telegram “Texto + capa FLUX.2 Pro” (ou aviso só texto se fallback)  
-4. Referência de sucesso: execução `5712` · `urn:li:share:7489362507237675008`
+3. Conferir LinkedIn + Telegram “Texto + capa qwen-image-2.0” (ou aviso só texto se fallback)  
+4. Referência histórica: execução `5712` · `urn:li:share:7489362507237675008`
 
 ## Como testar a resposta a comentários
 
 1. Abrir [Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)  
-2. Confirmar nó **Generate Reply Text** = DeepSeek-V4-Flash (OpenRouter)  
+2. Confirmar nó **Generate Reply Text** = Qwen-Flash (Alibaba)  
 3. Comentar em um post monitorado (últimas 48h) ou **Execute once**  
 4. Em ~2 min: reply publicado + linha marcada no Sheets  
 5. Prompt: `prompts/resposta-comentario.json` · Skill: `skills/linkedin-resposta-comentario/`
 
 ## Stack em uma linha
 
-n8n (VPS) · OpenRouter DeepSeek-V4-Flash · FLUX.2 Pro · LinkedIn OAuth/REST · Sheets · Telegram
+n8n (VPS) · Alibaba Qwen-Plus · qwen-image-2.0 · Qwen-Flash · LinkedIn OAuth/REST · Sheets · Telegram

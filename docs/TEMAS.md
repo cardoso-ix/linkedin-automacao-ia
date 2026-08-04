@@ -8,7 +8,7 @@
 > ```
 >
 > Em fevereiro (28/29 dias) só rodam os temas 1–28/29 naquele mês.  
-> Usado pelo nó `Build Theme Context` do workflow Post Diario (DeepSeek + capa FLUX).
+> Usado pelo nó `Build Theme Context` do workflow Post Diario (Qwen-Plus + capa qwen-image-2.0).
 
 | Turno | Horário | Lista | Ângulo |
 |-------|---------|-------|--------|

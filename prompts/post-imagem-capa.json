@@ -1,9 +1,13 @@
 {
-  "model": "black-forest-labs/flux.2-pro",
-  "provider": "openrouter",
-  "endpoint": "https://openrouter.ai/api/v1/images",
+  "model": "qwen-image-2.0",
+  "provider": "alibaba-model-studio",
+  "endpoint": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
+  "api_style": "dashscope-multimodal-generation",
+  "size": "1024*1024",
   "aspect_ratio": "1:1",
   "output_format": "png",
+  "watermark": false,
+  "prompt_extend": true,
   "style_name": "capa_editorial_8estilos",
   "style_rotation": [
     "dashboard",
@@ -16,8 +20,9 @@
     "blocos modulares"
   ],
   "style_selection": "round-robin por dayOfMonth: estilos[(dayOfMonth - 1) % 8] (America/Sao_Paulo). Estável e reproduzível por dia.",
-  "system_brief": "Capa editorial LinkedIn (sem texto na arte) para newsletter Previsibilidade na Prática, com rotação de 8 estilos abstratos tech/corporativos. Gerada via OpenRouter FLUX.2 Pro.",
+  "system_brief": "Capa editorial LinkedIn (sem texto na arte) para newsletter Previsibilidade na Prática, com rotação de 8 estilos abstratos tech/corporativos. Gerada via Alibaba Model Studio qwen-image-2.0 (cota gratuita Singapore).",
   "prompt_template": "Ilustração de capa para post de LinkedIn sobre inteligência artificial, agentes de IA, IA generativa ou automação industrial, vinculada à newsletter \"Previsibilidade na Prática\". Público técnico e profissional.\n\nEstilo selecionado: {{estilo_da_rodada}}\n\nSe \"dashboard\": painel de dados abstrato com gráficos de linha, barras e nós conectados, fundo azul escuro degradê, tons de azul marinho, cinza grafite e branco, destaque em azul ciano ou verde água.\n\nSe \"rede neural\": rede neural estilizada formada por pontos e linhas conectados em padrão orgânico, fundo branco ou cinza claro, traços finos, tons de azul escuro e cinza, destaque discreto em cor vibrante.\n\nSe \"engrenagem e circuito\": formas de engrenagem industrial combinadas com trilhas de circuito eletrônico, fundo neutro cinza claro ou branco, linhas finas, tons de azul escuro e cinza, um toque de cor de destaque.\n\nSe \"fluxo de processo\": diagrama abstrato de fluxo de processo com setas e caixas geométricas conectadas em sequência lógica, fundo branco ou cinza claro, tons de azul escuro e cinza, destaque em cor de acento.\n\nSe \"camadas de dados\": camadas semitransparentes sobrepostas sugerindo profundidade de processamento, fundo azul escuro degradê, tons de azul e cinza metálico, brilho sutil em azul ciano.\n\nSe \"grade e nós\": grade geométrica minimalista com pontos de conexão destacados em alguns cruzamentos, fundo branco ou cinza muito claro, tons de azul marinho e cinza, um nó em destaque com cor de acento.\n\nSe \"ondas de sinal\": linhas onduladas sobrepostas sugerindo fluxo de informação, fundo azul escuro ou preto suave, tons de azul, ciano e branco, composição fluida.\n\nSe \"blocos modulares\": blocos geométricos modulares empilhados ou conectados sugerindo arquitetura de sistema, fundo cinza claro, tons de azul escuro e cinza, um bloco em destaque com cor de acento.\n\nTema do post: {{tema_do_post}}\n\nRegras fixas: Composição minimalista, editorial, sem texto, sem logotipos, sem rostos humanos, sem robôs antropomórficos, sem estética de ficção científica exagerada. Aparência de ilustração de revista de tecnologia ou capa de relatório corporativo, com espaço negativo e alta qualidade visual. Proporção adequada para post de LinkedIn (quadrado 1:1).",
+  "negative_prompt": "text, letters, typography, watermark, logo, brand mark, human face, anthropomorphic robot, sci-fi overload, cyberpunk neon overload, photorealistic portrait, busy collage, low resolution, distorted limbs, oversaturated colors, AI-looking artifacts, chaotic composition",
   "negative_cues": [
     "text",
     "letters",
@@ -33,22 +38,43 @@
     "busy collage",
     "3 glass cards layout"
   ],
+  "request_body_template": {
+    "model": "qwen-image-2.0",
+    "input": {
+      "messages": [
+        {
+          "role": "user",
+          "content": [{ "text": "{{imagePrompt}}" }]
+        }
+      ]
+    },
+    "parameters": {
+      "negative_prompt": "{{negative_prompt}}",
+      "prompt_extend": true,
+      "watermark": false,
+      "size": "1024*1024",
+      "n": 1
+    }
+  },
   "n8n_usage": {
     "nodes": [
       "Build Cover Prompt",
-      "Generate Cover Flux Pro (HTTP POST OpenRouter /api/v1/images)",
-      "Prepare Flux Binary (base64 → binary)",
+      "Generate Cover Qwen Image (HTTP POST DashScope multimodal-generation)",
+      "Download Cover From URL",
+      "Prepare Cover Binary",
       "Check Cover Ready",
       "IF Cover OK"
     ],
-    "credential": "openRouterApi (OpenRouter account)",
+    "credential": "Header Auth Bearer (Alibaba Model Studio API key) — NUNCA no Git",
+    "response_image_path": "output.choices[0].message.content[0].image",
     "inputs_from": [
       "Sanitize Post Text.tema",
       "Sanitize Post Text.dayOfMonth",
       "Build Cover Prompt.estilo / imagePrompt"
     ],
-    "output": "binary image → Post With Image",
-    "fallback": "Post Text Only"
+    "output": "URL PNG (válida ~24h) → download binary → Post With Image",
+    "fallback": "Post Text Only",
+    "free_quota_tip": "Liberar qwen-image-2.0 no Model Square (Singapore). Preferir Free Quota Only para não gastar além da cota."
   },
-  "_note": "Capa editorial SEM texto + 8 estilos via OpenRouter black-forest-labs/flux.2-pro. Nós: Build Cover Prompt → Generate Cover Flux Pro → Prepare Flux Binary → Check Cover Ready → IF Cover OK."
+  "_note": "Capa editorial SEM texto + 8 estilos via Alibaba qwen-image-2.0. Substitui OpenRouter FLUX.2 Pro."
 }

@@ -1,35 +1,35 @@
-# Tutorial rápido — do zero
+# Tutorial rápido — LinkedIn automação (Alibaba)
 
-## O que você tem
+## O que o sistema faz
 
-1. Post automático às **08:00** (texto DeepSeek + capa FLUX.2 Pro; fallback só texto)
-2. Resposta automática a comentários (Sheets + HTML, poll 2 min) com **DeepSeek-V4-Flash**
+1. Post automático às **08:00** (texto Qwen-Plus + capa qwen-image-2.0; fallback só texto)
+2. Resposta automática a comentários (Sheets + HTML, poll 2 min) com **Qwen-Flash**
 
-## Ativar o post diário
+## Post diário
 
-1. Abra [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo)
-2. Confira credenciais **OpenRouter** (texto + imagem) + **LinkedIn**
-3. **Execute once** (teste) — deve gerar texto com DeepSeek-V4-Flash, capa com FLUX.2 Pro e publicar
-4. Se a capa falhar, o fluxo publica só o texto (comportamento esperado)
-5. Se ok, deixe o workflow **Active** (após Publish do draft)
+1. Abra https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo
+2. Confira credenciais **Alibaba Model Studio** (texto + imagem) + **LinkedIn**
+3. **Execute once** (teste) — deve gerar texto com `qwen-plus`, capa com `qwen-image-2.0` e publicar
+4. Se já postou hoje → Telegram **skip**
+5. Se a capa falhar → publica só texto (fallback)
 
-## Respostas a comentários (sem Gmail)
+## Resposta a comentários
 
-1. Abra [LinkedIn Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)
-2. Confira **Generate Reply Text** → modelo OpenRouter `deepseek/deepseek-v4-flash`
-3. Credencial **OpenRouter account** + LinkedIn
-4. Deixe **Active** (após Publish)
-5. Peça a outra pessoa para comentar em um post monitorado (últimas 48h)
-6. Em ~2 min o n8n deve gerar e publicar o reply
+1. Abra https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z
+2. Confira **Generate Reply Text** → modelo Alibaba `qwen-flash`
+3. Credencial **Alibaba Model Studio** + LinkedIn
+4. Comente em um post monitorado ou Execute once
+5. Em ~2 min: reply + mark done no Sheets
 
-## Temas
+## Se der erro `AccessDenied.Unpurchased`
 
-Lista de 30 temas em [TEMAS.md](TEMAS.md). **Dia N = tema N** (`dayOfMonth`; dia 31 → tema 1).
+1. Console Alibaba → Model Studio **Singapore**
+2. Liberar o modelo na cota gratuita
+3. Retestar no n8n
 
-## Cuidados
+## Lembretes
 
-- Workflows ativos: Post Diario Texto + Resposta Comentarios Post
-- Resposta via Gmail está **arquivado**
-- Sempre PT-BR nos posts e replies
-- Credencial OpenRouter cobre texto do post, capa e reply
-- Stack free (catálogo) é **opcional** — ver [STACK-GRATUITA.md](STACK-GRATUITA.md)
+- Credencial Alibaba cobre texto do post, capa e reply
+- Sempre **Publish** depois de editar o canvas
+- API key fica só no n8n — nunca no repositório
+- Detalhes: [SETUP.md](SETUP.md) · [FLUXO.md](FLUXO.md)

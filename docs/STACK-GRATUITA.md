@@ -3,16 +3,16 @@
 Timezone: **America/Sao_Paulo**  
 Workflow: [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) (`ysHFWIV0tGWJbhjo`)
 
-> **Status (2026-08-01):** isto **não** é o default.  
-> Em produção o post diário usa **OpenRouter DeepSeek-V4-Flash + FLUX.2 Pro**.  
-> Use este doc só se quiser religar um modo zero-custo (template/Gemini + catálogo de imagens).
+> **Status (2026-08-04):** isto **não** é o default.  
+> Em produção o post diário usa **Alibaba Qwen-Plus + qwen-image-2.0** (cota gratuita Singapore).  
+> Use este doc só se a cota Alibaba acabar e precisar de fallback com catálogo de imagens.
 
 ## O que “tudo gratuito” significa na prática
 
-| Peça | Caminho gratuito (legado) | Produção atual (pago via OpenRouter) |
-|------|---------------------------|--------------------------------------|
-| Texto | Template no n8n **ou** Gemini free tier | DeepSeek-V4-Flash |
-| Imagem | Catálogo `LinkedIn Imagens Agenda` (URL pública) | FLUX.2 Pro |
+| Peça | Caminho catálogo (legado) | Produção atual (cota Alibaba) |
+|------|---------------------------|-------------------------------|
+| Texto | Template no n8n **ou** Gemini free tier | Qwen-Plus |
+| Imagem | Catálogo `LinkedIn Imagens Agenda` (URL pública) | qwen-image-2.0 |
 | Alertas | Telegram (já no fluxo) | Telegram |
 
 ## Comparação rápida (2 opções legadas)
@@ -20,7 +20,7 @@ Workflow: [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/y
 ### A — Template + catálogo
 - **Prós:** zero chave nova; imagem com qualidade controlada (você gera offline).
 - **Contras:** texto menos “único” que LLM; exige URLs públicas na agenda.
-- **Quando usar:** créditos OpenRouter acabaram e precisa publicar amanhã.
+- **Quando usar:** cota Alibaba esgotada/`Unpurchased` e precisa publicar amanhã.
 
 ### B — Gemini free + catálogo
 - **Prós:** texto mais variado; ainda free (cota Google AI Studio).
@@ -42,7 +42,7 @@ Workflow: [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/y
   → Save + Telegram
 ```
 
-No modo free, os nós pagos (`Generate Post Text` / `Generate Cover Flux Pro`) ficam **desligados**.
+No modo free, os nós pagos/LLM de imagem (`Generate Post Text` / `Generate Cover Qwen Image`) ficam **desligados**.
 
 ## Setup (só se religar o modo free)
 
