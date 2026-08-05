@@ -1,9 +1,7 @@
 {
-  "model": "qwen-plus",
-  "provider": "alibaba-model-studio",
-  "base_url": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
-  "endpoint": "chat/completions",
-  "credential": "Alibaba Model Studio (DashScope / OpenAI-compatible)",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "openrouter",
+  "hf_model": "deepseek-ai/DeepSeek-V4-Flash",
   "messages": [
     {
       "role": "system",
@@ -14,11 +12,5 @@
       "content": "INSUMO (tema/contexto do dia): {{ $json.tema }}\nIndice do tema: {{ $json.themeIndex }} (Dia N = tema N, ciclo 1-30).\nDia (SP): {{ $json.today }}.\n\nTransforme este insumo em um post LinkedIn pronto para publicar, seguindo as regras do system.\nSe o tema parecer recorte de newsletter, preserve a ideia central e adapte so o formato.\n\nNao repetir estes angulos recentes:\n{{ $json.memoryContext }}"
     }
   ],
-  "n8n_usage": {
-    "nodes": ["Generate Post Text", "Qwen Plus Chat"],
-    "credential": "OpenAI API (base URL Alibaba compatible-mode) ou Header Auth Bearer",
-    "model": "qwen-plus",
-    "free_quota_tip": "Cota gratuita Singapore: liberar qwen-plus no Model Square / Free Quota. Erro AccessDenied.Unpurchased = modelo ainda nao ativado."
-  },
-  "_note": "2026-08-04: texto via Alibaba Model Studio qwen-plus (cota gratuita Singapore). Substitui OpenRouter DeepSeek."
+  "_note": "2026-08-01: briefing Previsibilidade na Pratica; texto via OpenRouter deepseek/deepseek-v4-flash; paragrafos corridos 1000-1800 chars."
 }

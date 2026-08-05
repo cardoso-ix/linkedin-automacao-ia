@@ -9,7 +9,7 @@ O padrão ativo é **capa editorial sem texto** (ilustração abstrata tech/corp
 
 Prompt: [`prompts/post-imagem-capa.json`](../prompts/post-imagem-capa.json)
 
-Modelo em produção: Alibaba Model Studio **`qwen-image-2.0`** via DashScope `multimodal-generation` (`1024*1024`, 1:1).
+Modelo em produção: OpenRouter **`black-forest-labs/flux.2-pro`** via HTTP `/api/v1/images`.
 
 ### Estilos (round-robin por `dayOfMonth`)
 
@@ -32,26 +32,38 @@ Ex.: Dia 1 → `dashboard`; Dia 2 → `rede neural`; Dia 9 → `dashboard` de no
 
 | Em vez de… | Preferir… |
 |------------|-----------|
-| Texto/labels na imagem | **Sem texto** na arte |
+| Texto/labels/números na imagem | **Somente imagem** — zero tipografia |
 | Molde 3 cards glass (legado) | Capa editorial abstrata do estilo da rodada |
 | Retrato / robô humanoide | Formas geométricas, fluxos, circuitos, nós |
 | Cyberpunk / colagem | Minimalismo de revista tech / relatório corporativo |
 
+#### Anti-texto (obrigatório)
+
+A capa deve conter **apenas** elementos visuais. É proibido na arte:
+
+- letras, números, palavras (qualquer idioma)
+- títulos, subtítulos, legendas, labels de gráfico, eixos com valores
+- watermark, logo, marca, assinatura, balões de fala, placas
+- UI com menus/botões com texto
+
+Painéis/gráficos, se existirem, são **mudos** (formas sem números e sem legendas).  
+Detalhe no prompt: [`prompts/post-imagem-capa.json`](../prompts/post-imagem-capa.json) → `hard_rules_no_text` + `negative_prompt`.
+
 Stack free / catálogo (**opcional, não default**): [`STACK-GRATUITA.md`](STACK-GRATUITA.md)
 
-## Fluxo ativo no n8n (qwen-image-2.0 via Alibaba)
+## Fluxo ativo no n8n (FLUX.2 Pro via OpenRouter)
 
 ```
 Sanitize Post Text
   → Build Cover Prompt (escolhe estilo + monta briefing)
-  → Generate Cover Qwen Image (DashScope qwen-image-2.0, 1024*1024)
-  → Download Cover From URL → Prepare Cover Binary
+  → Generate Cover Flux Pro (OpenRouter FLUX.2 Pro, 1:1 png)
+  → Prepare Flux Binary
   → Check Cover Ready → IF Cover OK
        OK   → Post With Image
        FAIL → Post Text Only
 ```
 
-Credencial: **Alibaba Model Studio** (mesma workspace do texto Qwen).
+Credencial: **OpenRouter account** (mesma do texto DeepSeek).
 
 ## Fluxo opcional (catálogo — gratuito)
 
@@ -68,7 +80,7 @@ Data table: **LinkedIn Imagens Agenda** (`iuKvPfKaSd77gl4H`) — só necessário
 
 ## Fallback
 
-Se a geração qwen-image-2.0 falhar (cota, `Unpurchased`, erro de API, etc.), o fluxo publica **só o texto**. O Telegram reflete isso (`hasCover` / “Somente texto”).
+Se a geração FLUX.2 Pro falhar (créditos OpenRouter, erro de API, etc.), o fluxo publica **só o texto**. O Telegram reflete isso (`hasCover` / “Somente texto”).
 
 ## Lote 1 — 30/07 a 03/08/2026 (legado / catálogo)
 
@@ -88,8 +100,8 @@ Catálogo: [`assets/posts/catalogo-lote-1.json`](../assets/posts/catalogo-lote-1
 
 ## Specs (padrão ativo)
 
-- Formato: **1:1** (`1024*1024` png via DashScope → download → LinkedIn feed)
+- Formato: **1:1** (png via OpenRouter Image API → LinkedIn feed)
 - Texto na arte: **nenhum** (capa editorial)
 - Sem watermark / sem logo de marca / sem rostos / sem robôs antropomórficos
-- Modelo: **qwen-image-2.0** · size **1024\*1024** · `prompt_extend: true` · `watermark: false`
-- Nós n8n: `Build Cover Prompt`, `Generate Cover Qwen Image`, `Download Cover From URL`, `Prepare Cover Binary`, `Check Cover Ready`, `IF Cover OK`
+- Modelo: **black-forest-labs/flux.2-pro** · aspect **1:1** · png
+- Nós n8n: `Build Cover Prompt`, `Generate Cover Flux Pro`, `Prepare Flux Binary`, `Check Cover Ready`, `IF Cover OK`

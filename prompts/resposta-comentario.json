@@ -1,9 +1,6 @@
 {
-  "model": "qwen-flash",
-  "provider": "alibaba-model-studio",
-  "base_url": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
-  "endpoint": "chat/completions",
-  "credential": "Alibaba Model Studio (DashScope / OpenAI-compatible)",
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "openrouter",
   "messages": [
     {
       "role": "system",
@@ -14,11 +11,5 @@
       "content": "Autor do comentario: {{ $json.authorName }}\n\nComentario:\n{{ $json.commentText }}\n\nContexto do post (resumo):\n{{ $json.postText }}\n\nEscreva so a resposta:"
     }
   ],
-  "n8n_usage": {
-    "nodes": ["Generate Reply Text", "Qwen Flash Chat"],
-    "credential": "OpenAI API (base URL Alibaba compatible-mode) ou Header Auth Bearer",
-    "model": "qwen-flash",
-    "free_quota_tip": "Cota gratuita Singapore: liberar qwen-flash. Poll a cada 2 min — flash economiza tokens vs plus."
-  },
-  "_note": "Workflow LinkedIn Resposta Comentarios Post. Modelo qwen-flash via Alibaba Model Studio (cota gratuita). Skill: skills/linkedin-resposta-comentario."
+  "_note": "Workflow LinkedIn Resposta Comentarios Post (Sheets+HTML, sem Gmail). Modelo deepseek/deepseek-v4-flash via OpenRouter. Skill: skills/linkedin-resposta-comentario."
 }

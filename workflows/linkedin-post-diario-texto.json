@@ -2,7 +2,7 @@
   "id": "ysHFWIV0tGWJbhjo",
   "name": "LinkedIn Post Diario Texto",
   "active": true,
-  "description": "08:00 SP: Dia N (1–30) + Qwen-Plus (texto) + capa qwen-image-2.0 (Alibaba Model Studio, cota gratuita). Fallback só texto. Anti-dupe + Telegram ok/skip/fail.",
+  "description": "08:00 SP: Dia N (1–30) + DeepSeek-V4-Flash + capa FLUX.2 Pro (OpenRouter). Fallback só texto. Anti-dupe + Telegram ok/skip/fail.",
   "url": "https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo",
   "timezone": "America/Sao_Paulo",
   "schedule": "0 8 * * *",
@@ -13,12 +13,11 @@
     "IF Already Posted",
     "Build Theme Context",
     "Generate Post Text",
-    "Qwen Plus Chat",
+    "DeepSeek V4 Flash",
     "Sanitize Post Text",
     "Build Cover Prompt",
-    "Generate Cover Qwen Image",
-    "Download Cover From URL",
-    "Prepare Cover Binary",
+    "Generate Cover Flux Pro",
+    "Prepare Flux Binary",
     "Check Cover Ready",
     "IF Cover OK",
     "Post With Image",
@@ -33,14 +32,12 @@
     "Notify Telegram Skip",
     "Build Fail Notify"
   ],
-  "model": "qwen-plus",
-  "textProvider": "alibaba-model-studio",
-  "textBaseUrl": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
-  "imageModel": "qwen-image-2.0",
-  "imageProvider": "alibaba-model-studio",
-  "imageEndpoint": "https://ws-88pwwhzlxkoiwrfh.ap-southeast-1.maas.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
-  "imageSize": "1024*1024",
-  "credential": "Alibaba Model Studio (texto OpenAI-compatible + imagem DashScope HTTP)",
+  "model": "deepseek/deepseek-v4-flash",
+  "textProvider": "openrouter",
+  "imageModel": "black-forest-labs/flux.2-pro",
+  "imageProvider": "openrouter",
+  "imageEndpoint": "https://openrouter.ai/api/v1/images",
+  "credential": "OpenRouter account (texto + imagem)",
   "fallback": "post_text_only",
   "themes": "docs/TEMAS.md (Dia N = tema N, 30/mês)",
   "coverStyles": 8,
@@ -54,13 +51,7 @@
   },
   "verifiedExecution": {
     "id": 5712,
-    "shareUrn": "urn:li:share:7489362507237675008",
-    "note": "Prova histórica com stack OpenRouter; revalidar após Publish da stack Alibaba."
+    "shareUrn": "urn:li:share:7489362507237675008"
   },
-  "activationRequired": [
-    "Model Studio Singapore ativo",
-    "Liberar qwen-plus e qwen-image-2.0 na cota gratuita",
-    "Credencial n8n com API key da workspace (não commitada)"
-  ],
-  "note": "2026-08-04: migração OpenRouter→Alibaba Model Studio (cota gratuita). Canvas n8n precisa Publish após troca de nós/credencial."
+  "note": "2026-08-01: nós capa (não infográfico); anti-dupe restaurado; stickies e docs alinhados ao estado real."
 }
