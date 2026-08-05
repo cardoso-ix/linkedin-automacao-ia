@@ -5,7 +5,7 @@ Timezone: **America/Sao_Paulo**
 ## Decisão de produto (padrão ativo)
 
 A arte do post **não** deve parecer “foto/surreal de IA genérica” (estilo Google LLM / cyberpunk).  
-O padrão ativo é **capa editorial sem texto** (ilustração abstrata tech/corporativa) com **rotação de 8 estilos**, vinculada à newsletter *Previsibilidade na Prática*.
+O padrão ativo é **capa editorial sem texto, letras nem números** (ilustração abstrata tech/corporativa) com **rotação de 8 estilos**, vinculada à newsletter *Previsibilidade na Prática*.
 
 Prompt: [`prompts/post-imagem-capa.json`](../prompts/post-imagem-capa.json)
 
@@ -32,7 +32,7 @@ Ex.: Dia 1 → `dashboard`; Dia 2 → `rede neural`; Dia 9 → `dashboard` de no
 
 | Em vez de… | Preferir… |
 |------------|-----------|
-| Texto/labels na imagem | **Sem texto** na arte (preferência). Se aparecer texto, **somente PT-BR** acentuado — nunca inglês |
+| Texto/labels/letras/números na imagem | **Proibido absoluto** — sem tipografia, letras, dígitos ou labels em qualquer idioma |
 | Molde 3 cards glass (legado) | Capa editorial abstrata do estilo da rodada |
 | Retrato / robô humanoide | Formas geométricas, fluxos, circuitos, nós |
 | Cyberpunk / colagem | Minimalismo de revista tech / relatório corporativo |

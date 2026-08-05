@@ -23,7 +23,7 @@ Roteiro da demo: [docs/PRESENTACAO.md](docs/PRESENTACAO.md)
 ```
 08:00  Post Diario:
          anti-dupe → Dia N (tema 1–30) → DeepSeek-V4-Flash (OpenRouter)
-         → sanitize → capa FLUX.2 Pro (8 estilos, sem texto)
+         → sanitize → capa FLUX.2 Pro (8 estilos, sem texto/letras/números)
          → LinkedIn IMAGE  |  fallback: só texto
          → Data Table + Telegram (ok / skip / fail)
 
@@ -53,7 +53,7 @@ Timezone: **America/Sao_Paulo**.
 | Arquivo | Uso |
 |---------|-----|
 | `prompts/post-texto.json` | Briefing “Previsibilidade na Prática” → DeepSeek via OpenRouter |
-| `prompts/post-imagem-capa.json` | Capa editorial FLUX.2 Pro (sem texto + 8 estilos) |
+| `prompts/post-imagem-capa.json` | Capa editorial FLUX.2 Pro (sem texto/letras/números + 8 estilos) |
 | `prompts/resposta-comentario.json` | Reply a comentários (DeepSeek via OpenRouter) |
 | `skills/linkedin-resposta-comentario/` | Skill Cursor da voz de reply |
 
@@ -63,7 +63,7 @@ Timezone: **America/Sao_Paulo**.
 - 1000–1800 caracteres (parágrafos corridos)
 - Tom humano; sem travessão, emojis ou jargão vazio
 - Sem markdown (`**`) e sem URLs
-- No máximo 3 hashtags (opcionais)
+- Entre 3 e 5 hashtags temáticas misturadas conforme o assunto
 - Fechar com reflexão aberta ou convite leve ao comentário
 
 ## Stack

@@ -53,5 +53,5 @@
     "id": 5712,
     "shareUrn": "urn:li:share:7489362507237675008"
   },
-  "note": "2026-08-01: Sanitize corta degeneracao e completa 3 hashtags; DeepSeek temp 0.5 maxTokens 1400; anti-dupe com createdAt; ja houve post sucesso hoje (5741)."
+  "note": "2026-08-04: capa sem letras/números (banimento absoluto); hashtags 3–5 misturadas por tema; DeepSeek temp 0.5 maxTokens 1400."
 }

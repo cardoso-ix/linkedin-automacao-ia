@@ -19,9 +19,9 @@
 - [ ] Sem URLs no corpo
 - [ ] 1000–1800 caracteres (parágrafos corridos)
 - [ ] Sem travessão / emojis / jargão vazio
-- [ ] No máximo 3 hashtags (opcionais)
+- [ ] Entre 3 e 5 hashtags temáticas misturadas conforme o assunto
 - [ ] Fechar com reflexão ou convite leve ao comentário
-- [ ] Capa **sem texto** na arte (se houver texto, só PT-BR; 8 estilos round-robin)
+- [ ] Capa **sem texto, sem letras e sem números** na arte (8 estilos round-robin)
 
 ## Respostas a comentários
 
