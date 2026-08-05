@@ -32,10 +32,22 @@ Ex.: Dia 1 → `dashboard`; Dia 2 → `rede neural`; Dia 9 → `dashboard` de no
 
 | Em vez de… | Preferir… |
 |------------|-----------|
-| Texto/labels na imagem | **Sem texto** na arte |
+| Texto/labels/números na imagem | **Somente imagem** — zero tipografia |
 | Molde 3 cards glass (legado) | Capa editorial abstrata do estilo da rodada |
 | Retrato / robô humanoide | Formas geométricas, fluxos, circuitos, nós |
 | Cyberpunk / colagem | Minimalismo de revista tech / relatório corporativo |
+
+#### Anti-texto (obrigatório)
+
+A capa deve conter **apenas** elementos visuais. É proibido na arte:
+
+- letras, números, palavras (qualquer idioma)
+- títulos, subtítulos, legendas, labels de gráfico, eixos com valores
+- watermark, logo, marca, assinatura, balões de fala, placas
+- UI com menus/botões com texto
+
+Painéis/gráficos, se existirem, são **mudos** (formas sem números e sem legendas).  
+Detalhe no prompt: [`prompts/post-imagem-capa.json`](../prompts/post-imagem-capa.json) → `hard_rules_no_text` + `negative_prompt`.
 
 Stack free / catálogo (**opcional, não default**): [`STACK-GRATUITA.md`](STACK-GRATUITA.md)
 
