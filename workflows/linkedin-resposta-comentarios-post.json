@@ -16,6 +16,6 @@
     "Resposta: Loop Comments → Generate Reply Text → Prepare → Post LinkedIn Reply → Mark Done/Error → Wait 20s",
     "Webhook Fill Comments (manual/demo)"
   ],
-  "note": "Gmail workflow 5xkPzzTcKwdsPymn arquivado. Para editar via MCP: Settings → Available in MCP = ON.",
-  "mcpStatus": "requires Available in MCP enabled before agent can update canvas"
+  "note": "2026-08-01: anti-aspas citação, anti-travessão, anti-clichê metrologia. Prepare strip quotes/dashes + styleFlags. Gmail arquivado.",
+  "mcpStatus": "Available in MCP = ON"
 }

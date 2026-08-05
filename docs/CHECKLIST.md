@@ -21,7 +21,7 @@
 - [ ] Sem travessão / emojis / jargão vazio
 - [ ] No máximo 3 hashtags (opcionais)
 - [ ] Fechar com reflexão ou convite leve ao comentário
-- [ ] Capa **sem texto** na arte (8 estilos round-robin)
+- [ ] Capa **sem texto** na arte (se houver texto, só PT-BR; 8 estilos round-robin)
 
 ## Respostas a comentários
 
