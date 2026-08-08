@@ -131,13 +131,35 @@ Site estático/Next pode ir na **Vercel** (mais simples) e a VPS ficar só para 
 
 ---
 
+## Hermes (assistente Telegram)
+
+Na mesma VPS, container **Hermes** recebe comandos no Telegram e dispara o webhook do n8n. Post **não** é agendado às 08:00.
+
+| Item | Valor |
+|------|--------|
+| Container | `hermes` |
+| Dados | volume → `/opt/data` |
+| Script | `/opt/data/bin/postar-linkedin.sh` |
+| Compose de referência | `hermes/docker-compose.yml` no repo |
+| Doc | [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md) |
+
+Env no `.env` do Hermes (só na VPS): `OPENROUTER_*`, `TELEGRAM_BOT_TOKEN`, `N8N_LINKEDIN_POST_WEBHOOK_URL`, `N8N_HERMES_WEBHOOK_SECRET`.
+
+Layout sugerido:
+
+```
+/opt/
+  n8n/          # stack n8n
+  hermes/       # compose Hermes (ou volume Docker nomeado)
+```
+
 ## Stack em produção (resumo)
 
-O n8n nesta VPS roda o post diário e o reply a comentários com **OpenRouter DeepSeek-V4-Flash** (capa do post: FLUX.2 Pro). Resposta via Gmail está arquivada. Detalhes: [FLUXO.md](FLUXO.md).
+**Hermes** (Telegram) dispara o post; **n8n** gera/publica com OpenRouter DeepSeek-V4-Flash + FLUX.2 Pro (mode full) e responde comentários. Schedule 08:00 OFF. Gmail de reply arquivado. Detalhes: [FLUXO.md](FLUXO.md) · [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md).
 
 ## Resumo
 
 1. **Link n8n:** https://srv1824850.hstgr.cloud/ — **está no ar**.  
-2. **Docker:** sim, mantenha n8n em Docker.  
-3. **Organização:** `/opt/n8n`, `/opt/sites`, `/opt/apps`, proxy HTTPS único.  
-4. **Próximo passo:** liberar SSH (ou mandar `docker ps` + compose) para eu aplicar a estrutura no servidor.
+2. **Docker:** n8n + Hermes na mesma VPS.  
+3. **Organização:** `/opt/n8n`, Hermes, `/opt/sites`, `/opt/apps`, proxy HTTPS.  
+4. **Post:** só sob comando Telegram (Hermes → webhook).

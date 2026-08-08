@@ -2,7 +2,7 @@
   "id": "ysHFWIV0tGWJbhjo",
   "name": "LinkedIn Post Diario Texto",
   "active": true,
-  "description": "08:00 SP: Dia N (1–30) + DeepSeek-V4-Flash + capa FLUX.2 Pro (OpenRouter). Fallback só texto. Anti-dupe + Telegram ok/skip/fail.",
+  "description": "Webhook Hermes: mode full (texto+capa) ou text_only. Schedule 08:00 OFF.",
   "url": "https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo",
   "timezone": "America/Sao_Paulo",
   "schedule": "0 8 * * *",
@@ -53,5 +53,9 @@
     "id": 5712,
     "shareUrn": "urn:li:share:7489362507237675008"
   },
-  "note": "2026-08-04: capa sem letras/números (banimento absoluto); hashtags 3–5 misturadas por tema; DeepSeek temp 0.5 maxTokens 1400."
+  "note": "2026-08-08: IF Text Only Mode — text_only pula FLUX; full mantém capa. Schedule OFF.",
+  "postModes": [
+    "full",
+    "text_only"
+  ]
 }

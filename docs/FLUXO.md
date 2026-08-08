@@ -1,71 +1,68 @@
-# Fluxo — arquitetura ativa (post diário + reply a comentários)
+# Fluxo — arquitetura ativa (Hermes + n8n)
 
 Timezone: **America/Sao_Paulo**
+
+## Modelo operacional
+
+| Camada | Papel |
+|--------|--------|
+| **Hermes** (Telegram) | Assistente: você comanda; ele dispara o post |
+| **n8n** | Braço operacional: gera, publica, responde comentários |
+
+**Post sob comando apenas.** Schedule 08:00 **OFF**. Detalhes: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md).
 
 ## Workflows em uso (n8n)
 
 | Workflow | ID | Status |
 |----------|-----|--------|
-| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | **ATIVO** |
-| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | **ATIVO** (texto reply: DeepSeek via OpenRouter) |
+| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | **ATIVO** — só webhook Hermes (schedule OFF) |
+| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | **ATIVO** — poll ~2 min |
 
-> **Arquivado / fora do portfólio:** LinkedIn Resposta via Gmail (`5xkPzzTcKwdsPymn`).
+> **Arquivado:** LinkedIn Resposta via Gmail (`5xkPzzTcKwdsPymn`).
 
-## 1) Post diário 08:00 (texto + capa FLUX)
+## 1) Post LinkedIn sob comando (Hermes → n8n)
 
 **Workflow:** [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) · ID `ysHFWIV0tGWJbhjo`
 
+**Disparo:** Telegram → Hermes → webhook. Nó **Daily 8h Sao Paulo** desativado.
+
 ```
-08:00
-  → Get Recent Posts (LinkedIn Posts Diario)
-  → já postou hoje? → skip + Telegram
-  → Build Theme Context (Dia N = tema N; 1–30; America/Sao_Paulo)
-  → Generate Post Text (DeepSeek-V4-Flash via OpenRouter) → Sanitize
-  → Build Cover Prompt (estilo = round-robin dayOfMonth % 8)
-  → Generate Cover Flux Pro (OpenRouter `black-forest-labs/flux.2-pro`)
-  → Prepare Flux Binary
-  → Check Cover Ready → IF Cover OK
-       OK  → Post With Image
-       FAIL → Post Text Only
-  → Save Posted Row → Telegram (ok / skip / fail; reflete hasCover)
+Telegram ( /postar | /postar-texto | frase )
+  → Hermes (script/skill)
+  → Hermes Webhook (secret)
+  → Get Recent Posts → anti-dupe (bypass se force=1)
+  → Build Theme Context (Dia N = tema N; 1–30)
+  → Generate Post Text (DeepSeek-V4-Flash) → Sanitize
+  → IF Text Only Mode
+       text_only / sem_imagem → Post Text Only
+       full → Build Cover Prompt → FLUX.2 Pro → Post With Image
+              (fallback Post Text Only se capa falhar)
+  → Save Posted Row → Telegram alerta
 ```
 
-- **Texto:** OpenRouter `deepseek/deepseek-v4-flash` (AI Agent + `lmChatOpenRouter`)
-- **Imagem:** OpenRouter FLUX.2 Pro via HTTP `/api/v1/images`
-- Temas: [TEMAS.md](TEMAS.md) · Spec imagens: [IMAGENS-LOTE.md](IMAGENS-LOTE.md)
+- **Texto:** `deepseek/deepseek-v4-flash`  
+- **Imagem:** `black-forest-labs/flux.2-pro`  
+- Temas: [TEMAS.md](TEMAS.md) · Capas: [IMAGENS-LOTE.md](IMAGENS-LOTE.md)
 
-**Prova:** execução `5712` · `urn:li:share:7489362507237675008`
+## 2) Resposta a comentários (automático)
 
-## 2) Resposta a comentários (Sheets + HTML — sem Gmail)
-
-**Workflow:** [LinkedIn Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z) · ID `q28d2xJlAgvMpZ9Z`
+**Workflow:** [LinkedIn Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)
 
 ```
 Every 2 min
-  → Get Already Replied / Get Monitor Posts (Sheets)
-  → Filter Fresh 48h → Loop Posts
-  → Fetch Post HTML → Parse HTML Comments
-  → Filter New Comments → Loop Comments
-  → Generate Reply Text (DeepSeek-V4-Flash via OpenRouter)
-  → Prepare Reply Payload → Post LinkedIn Reply
-  → Mark Done / Error → Wait 20s
+  → Sheets monitor → HTML → parse comentários
+  → DeepSeek-V4-Flash → Post LinkedIn Reply → mark done
 ```
 
-- **Texto reply:** OpenRouter `deepseek/deepseek-v4-flash` (mesmo stack do post diário)
-- **Prompt:** [`prompts/resposta-comentario.json`](../prompts/resposta-comentario.json)
-- **Skill:** [`skills/linkedin-resposta-comentario/`](../skills/linkedin-resposta-comentario/)
-- **Credencial:** OpenRouter account
-- Stickies do canvas: referenciar DeepSeek-V4-Flash (não GPT-3.5)
-
-> Se o agent MCP não editar o canvas: no workflow → Settings → **Available in MCP** = ON.
+Não passa pelo Hermes. Prompt: [`prompts/resposta-comentario.json`](../prompts/resposta-comentario.json).
 
 ## Data Tables / Sheets
 
 | Recurso | Uso |
 |---------|-----|
-| **LinkedIn Posts Diario** (`mayfOqKniH3iFbiw`) | Memória / anti-dupe do post 08:00 |
-| Google Sheets (monitor + already replied) | Fila/dedup do fluxo de comments |
+| **LinkedIn Posts Diario** | Memória / anti-dupe (`force=1` bypass) |
+| Google Sheets (monitor + already replied) | Fila do fluxo de comments |
 
-## Legado / opcional
+## Legado
 
-Stack gratuita (template + catálogo): [STACK-GRATUITA.md](STACK-GRATUITA.md) — **não** é o default.
+Stack gratuita: [STACK-GRATUITA.md](STACK-GRATUITA.md) — **não** é o default.

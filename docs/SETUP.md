@@ -1,15 +1,17 @@
-# Setup — n8n VPS
+# Setup — Hermes + n8n (VPS)
 
-Este projeto roda no **n8n** (VPS Hostinger).
+Este projeto roda em dois containers na VPS Hostinger: **Hermes** (assistente Telegram) e **n8n** (pipeline LinkedIn).
 
 ## Passos
 
-1. Abrir https://srv1824850.hstgr.cloud/
+1. Abrir https://srv1824850.hstgr.cloud/ (n8n)
 2. Confirmar credencial **LinkedIn account**
 3. Confirmar credencial **OpenRouter account** — texto (DeepSeek), capa (FLUX) e reply (DeepSeek)
-4. Fluxos: ver [FLUXO.md](FLUXO.md)
-5. Ativar os workflows da tabela abaixo
-6. Manter **Resposta via Gmail** arquivado
+4. Fluxos: ver [FLUXO.md](FLUXO.md) · Assistente: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md)
+5. Workflow **Post**: Active; nó **Daily 8h Sao Paulo** **desabilitado**
+6. Workflow **Reply**: Active (poll ~2 min)
+7. Manter **Resposta via Gmail** arquivado
+8. Hermes: Telegram pareado + script `/opt/data/bin/postar-linkedin.sh` + env do webhook
 
 ## Workflows ativos
 
@@ -22,19 +24,16 @@ Este projeto roda no **n8n** (VPS Hostinger).
 
 | Uso | Stack |
 |-----|--------|
-| Post diário (texto) | OpenRouter **`deepseek/deepseek-v4-flash`** |
-| Post diário (capa) | OpenRouter **`black-forest-labs/flux.2-pro`** (`/api/v1/images`) |
+| Post (texto) | OpenRouter **`deepseek/deepseek-v4-flash`** |
+| Post (capa, mode=full) | OpenRouter **`black-forest-labs/flux.2-pro`** |
 | Reply comentário | OpenRouter **`deepseek/deepseek-v4-flash`** |
-
-## MCP (para o agent editar o canvas de comments)
-
-No workflow **LinkedIn Resposta Comentarios Post** → Settings → **Available in MCP** = ON → Save.
 
 ## Validação rápida
 
-1. Execute once no Post Diario (ou esperar 08:00 SP).
-2. Conferir Telegram: ok com capa, skip (anti-dupe) ou aviso só texto.
-3. No fluxo de comments: Generate Reply Text com DeepSeek → reply no LinkedIn.
+1. No Telegram: `/postar` (completo) ou `/postar-texto` (só texto).
+2. Conferir Telegram de alerta: ok com capa, só texto, skip (anti-dupe) ou fail.
+3. n8n Executions: origem **webhook**.
+4. Reply: Generate Reply Text com DeepSeek → reply no LinkedIn (~2 min).
 
 Detalhes de VPS: [VPS.md](VPS.md) · Tutorial: [TUTORIAL.md](TUTORIAL.md)  
 Stack free (**opcional / legado**): [STACK-GRATUITA.md](STACK-GRATUITA.md)

@@ -1,15 +1,31 @@
-# Automação LinkedIn — Agentes de IA (n8n)
+# Automação LinkedIn — Hermes + n8n
 
-Sistema em produção que publica um post diário no LinkedIn (texto + capa editorial) e responde comentários nos posts monitorados — orquestrado no **n8n** (VPS).
+Sistema em produção: o **Hermes** (Telegram) é o assistente operacional; o **n8n** (VPS) executa geração e publicação no LinkedIn.
 
-| Fluxo | O que faz | Stack |
-|-------|-----------|--------|
-| **Post diário 08:00** | Tema do dia → texto → capa → LinkedIn | OpenRouter **DeepSeek-V4-Flash** + **FLUX.2 Pro** |
-| **Resposta a comentários** | Sheets + HTML → reply no post | OpenRouter **DeepSeek-V4-Flash** |
+| Papel | O que faz |
+|-------|-----------|
+| **Hermes** (`@funcionario_vip_bot`) | Recebe comandos no Telegram e dispara o pipeline |
+| **n8n** | Gera texto/capa, publica no LinkedIn, responde comentários |
 
-Roteiro da demo: [docs/PRESENTACAO.md](docs/PRESENTACAO.md)
+**Não há post automático às 08:00.** O schedule diário está **desativado**. Você escolhe quando postar pelo Telegram.
+
+| Fluxo | Disparo | Stack |
+|-------|---------|--------|
+| **Post LinkedIn** | Telegram → Hermes → webhook n8n | DeepSeek-V4-Flash + FLUX.2 Pro (ou só texto) |
+| **Resposta a comentários** | n8n a cada ~2 min (automático) | DeepSeek-V4-Flash |
+
+Roteiro da demo: [docs/PRESENTACAO.md](docs/PRESENTACAO.md) · Assistente: [docs/HERMES-ASSISTENTE.md](docs/HERMES-ASSISTENTE.md)
 
 **Portfólio** — [cardoso-ix.github.io/Portifolio](https://cardoso-ix.github.io/Portifolio/) · **LinkedIn** — [eduardo-cardoso](https://www.linkedin.com/in/eduardo-cardoso-213a02267)
+
+## Como postar (Telegram)
+
+| Comando / frase | Resultado |
+|-----------------|-----------|
+| `/postar` · `gera texto, imagem e posta` · `post completo` | Texto + capa FLUX |
+| `/postar-texto` · `posta só texto` · `sem imagem` | Só texto (sem capa) |
+
+Hermes **não pergunta** tema/canal — dispara o n8n na hora. O n8n notifica no Telegram ao terminar.
 
 ## Arquitetura
 
@@ -18,43 +34,55 @@ Roteiro da demo: [docs/PRESENTACAO.md](docs/PRESENTACAO.md)
 | LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo |
 | LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z |
 
-> Resposta via Gmail (`5xkPzzTcKwdsPymn`) — **arquivado** (fora do portfólio).
+> Resposta via Gmail (`5xkPzzTcKwdsPymn`) — **arquivado**.
 
 ```
-08:00  Post Diario:
-         anti-dupe → Dia N (tema 1–30) → DeepSeek-V4-Flash (OpenRouter)
-         → sanitize → capa FLUX.2 Pro (8 estilos, sem texto/letras/números)
-         → LinkedIn IMAGE  |  fallback: só texto
-         → Data Table + Telegram (ok / skip / fail)
+Você (Telegram) → Hermes (assistente)
+                    → webhook n8n (mode=full | text_only)
+                    → anti-dupe (force=1 bypass)
+                    → Dia N (tema 1–30) → DeepSeek-V4-Flash
+                    → IF text_only? → Post Text Only
+                      senão → capa FLUX.2 Pro → Post With Image
+                    → Data Table + Telegram alerta
 
-*/2m   Resposta Comentarios Post:
-         Sheets monitor → HTML → parse → DeepSeek-V4-Flash → HTTP reply
+*/2m   Resposta Comentarios (automático, sem Hermes):
+         Sheets → HTML → parse → DeepSeek → reply LinkedIn
 ```
 
 Timezone: **America/Sao_Paulo**.
-
-**Prova recente (post):** execução `5712` — post com imagem `urn:li:share:7489362507237675008`.
 
 ## Docs
 
 | Doc | Conteúdo |
 |-----|----------|
-| [docs/FLUXO.md](docs/FLUXO.md) | Arquitetura ativa nó a nó |
+| [docs/HERMES-ASSISTENTE.md](docs/HERMES-ASSISTENTE.md) | Comandos Telegram, webhook, modes full/text_only |
+| [docs/FLUXO.md](docs/FLUXO.md) | Arquitetura nó a nó |
 | [docs/TEMAS.md](docs/TEMAS.md) | 30 temas do mês (Dia N = tema N) |
 | [docs/IMAGENS-LOTE.md](docs/IMAGENS-LOTE.md) | Spec da capa editorial + 8 estilos |
 | [docs/SETUP.md](docs/SETUP.md) | Credenciais e ativação |
 | [docs/CHECKLIST.md](docs/CHECKLIST.md) | Checklist antes de ligar |
 | [docs/TUTORIAL.md](docs/TUTORIAL.md) | Tutorial rápido |
-| [docs/VPS.md](docs/VPS.md) | Acesso Hostinger / Docker |
-| [docs/STACK-GRATUITA.md](docs/STACK-GRATUITA.md) | Modo free **opcional / legado** (não é o default) |
+| [docs/VPS.md](docs/VPS.md) | Hostinger: n8n + Hermes Docker |
+| [docs/STACK-GRATUITA.md](docs/STACK-GRATUITA.md) | Modo free opcional / legado |
 
-## Prompts e skill
+## Repo Hermes (VPS)
+
+Arquivos em `hermes/` para deploy no container (secrets só no `.env` da VPS):
 
 | Arquivo | Uso |
 |---------|-----|
-| `prompts/post-texto.json` | Briefing “Previsibilidade na Prática” → DeepSeek via OpenRouter |
-| `prompts/post-imagem-capa.json` | Capa editorial FLUX.2 Pro (sem texto/letras/números + 8 estilos) |
-| `prompts/resposta-comentario.json` | Reply a comentários (DeepSeek via OpenRouter) |
+| `hermes/bin/postar-linkedin.sh` | Dispara webhook (`full` / `text_only`) |
+| `hermes/skills/linkedin-post-n8n/SKILL.md` | Skill do assistente |
+| `hermes/SOUL-FRAGMENT-LINKEDIN.md` | Fragmento para `SOUL.md` |
+| `hermes/docker-compose.yml` | Compose de referência |
+
+## Prompts e skill Cursor
+
+| Arquivo | Uso |
+|---------|-----|
+| `prompts/post-texto.json` | Briefing post → DeepSeek |
+| `prompts/post-imagem-capa.json` | Capa FLUX.2 Pro (sem tipografia) |
+| `prompts/resposta-comentario.json` | Reply a comentários |
 | `skills/linkedin-resposta-comentario/` | Skill Cursor da voz de reply |
 
 ## Regras do post
@@ -63,29 +91,27 @@ Timezone: **America/Sao_Paulo**.
 - 1000–1800 caracteres (parágrafos corridos)
 - Tom humano; sem travessão, emojis ou jargão vazio
 - Sem markdown (`**`) e sem URLs
-- Entre 3 e 5 hashtags temáticas misturadas conforme o assunto
-- Fechar com reflexão aberta ou convite leve ao comentário
+- Entre 3 e 5 hashtags temáticas
+- Capa **sem texto/letras/números** na arte
 
 ## Stack
 
 | Camada | Tecnologia |
 |--------|------------|
+| Assistente | Hermes Agent (Docker na VPS) + Telegram |
 | Orquestração | n8n (VPS Hostinger) |
-| Texto do post | OpenRouter **DeepSeek-V4-Flash** (`deepseek/deepseek-v4-flash`) |
-| Imagem do post | OpenRouter **FLUX.2 Pro** (`black-forest-labs/flux.2-pro`) via `/api/v1/images` |
-| Reply de comentário | OpenRouter **DeepSeek-V4-Flash** (mesmo modelo) |
-| Credencial | **OpenRouter account** (texto post, capa e reply) |
-| Publicação | LinkedIn OAuth (IMAGE ou texto) + REST comments |
+| Texto do post | OpenRouter **DeepSeek-V4-Flash** |
+| Imagem do post | OpenRouter **FLUX.2 Pro** |
+| Reply | OpenRouter **DeepSeek-V4-Flash** |
+| Publicação | LinkedIn OAuth + REST comments |
 | Memória de posts | Data Table `LinkedIn Posts Diario` |
-| Monitor de replies | Google Sheets (monitor + already replied) |
-| Alertas | Telegram (ok / skip / fail; reflete `hasCover`) |
+| Alertas | Telegram (ok / skip / fail) |
 
 ## Como validar
 
-1. Abrir o workflow Post Diario → **Execute once** (ou esperar 08:00).
-2. Se já houver post do dia → Telegram **skip** (anti-dupe).
-3. Caso contrário → LinkedIn com capa FLUX; Telegram “Texto + capa FLUX.2 Pro”.
-4. Reply: abrir Resposta Comentarios Post → conferir nó **Generate Reply Text** com DeepSeek OpenRouter → Execute once / aguardar poll.
-5. Conferir Executions no n8n.
+1. Telegram `/postar` → texto + capa (ou `/postar-texto` → só texto).
+2. Conferir Executions no n8n (origem **webhook**, não schedule).
+3. Confirmar nó **Daily 8h Sao Paulo** **desabilitado**.
+4. Reply: aguardar poll ~2 min após comentário em post monitorado.
 
-> Mudanças no canvas ficam em **draft** até **Publish**. Este repositório não contém API keys.
+> Mudanças no canvas ficam em **draft** até **Publish**. Este repositório **não** contém API keys.

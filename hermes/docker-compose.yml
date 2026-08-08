@@ -1,0 +1,80 @@
+services:
+  config-init:
+    image: busybox:1.36
+    volumes:
+      - hermes-data:/data
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /data /data/bin /data/skills/social-media/linkedin-post-n8n
+        echo IyEvdXNyL2Jpbi9lbnYgc2gKIyBEaXNwYXJhIHdlYmhvb2sgbjhuIGhlcm1lcy1saW5rZWRpbi1wb3N0LgojIFVzbzoKIyAgIHBvc3Rhci1saW5rZWRpbi5zaCAgICAgICAgICAgICAgIyBtb2RlPWZ1bGwgKHRleHRvICsgY2FwYSkKIyAgIHBvc3Rhci1saW5rZWRpbi5zaCBmdWxsCiMgICBwb3N0YXItbGlua2VkaW4uc2ggdGV4dF9vbmx5CiMgICBwb3N0YXItbGlua2VkaW4uc2ggLS1tb2RlIHRleHRfb25seQojICAgTU9ERT10ZXh0X29ubHkgcG9zdGFyLWxpbmtlZGluLnNoCgpzZXQgLWV1CgpVUkw9IiR7TjhOX0xJTktFRElOX1BPU1RfV0VCSE9PS19VUkw6LX0iClNFQ1JFVD0iJHtOOE5fSEVSTUVTX1dFQkhPT0tfU0VDUkVUOi19IgpNT0RFPSIke01PREU6LWZ1bGx9IgoKdXNhZ2UoKSB7CiAgZWNobyAiVXNvOiBwb3N0YXItbGlua2VkaW4uc2ggW2Z1bGx8dGV4dF9vbmx5XSBbLS1tb2RlIGZ1bGx8dGV4dF9vbmx5XSBbLS1mb3JjZSAwfDFdIgp9CgpGT1JDRT0xCndoaWxlIFsgJCMgLWd0IDAgXTsgZG8KICBjYXNlICIkMSIgaW4KICAgIGZ1bGx8Y29tcGxldG98d2l0aF9pbWFnZXxjb21faW1hZ2VtKQogICAgICBNT0RFPWZ1bGwKICAgICAgc2hpZnQKICAgICAgOzsKICAgIHRleHRfb25seXx0ZXh0LW9ubHl8dGV4dG98c2VtX2ltYWdlbXxzZW0taW1hZ2VtfG5vX2ltYWdlKQogICAgICBNT0RFPXRleHRfb25seQogICAgICBzaGlmdAogICAgICA7OwogICAgLS1tb2RlfC1tKQogICAgICBNT0RFPSIkMiIKICAgICAgc2hpZnQgMgogICAgICA7OwogICAgLS1mb3JjZXwtZikKICAgICAgRk9SQ0U9IiQyIgogICAgICBzaGlmdCAyCiAgICAgIDs7CiAgICAtLWhlbHB8LWgpCiAgICAgIHVzYWdlCiAgICAgIGV4aXQgMAogICAgICA7OwogICAgKikKICAgICAgIyBhY2VpdGEgZnJhc2Ugc29sdGEgdmluZGEgZG8gTExNL3NraWxsCiAgICAgIGxvd2VyPSQocHJpbnRmICclcycgIiQxIiB8IHRyICdbOnVwcGVyOl0nICdbOmxvd2VyOl0nKQogICAgICBjYXNlICIkbG93ZXIiIGluCiAgICAgICAgKnNvXCB0ZXh0byp8KnPDs1wgdGV4dG8qfCpzZW1cIGltYWdlbSp8KmFwZW5hc1wgdGV4dG8qfCpzZW1cIGNhcGEqfCp0ZXh0X29ubHkqKQogICAgICAgICAgTU9ERT10ZXh0X29ubHkKICAgICAgICAgIDs7CiAgICAgICAgKmNvbXBsZXRvKnwqY29tXCBpbWFnZW0qfCpnZXJhXCB0ZXh0byp8KnBvc3RcIGNvbXBsZXRvKnwqZnVsbCopCiAgICAgICAgICBNT0RFPWZ1bGwKICAgICAgICAgIDs7CiAgICAgIGVzYWMKICAgICAgc2hpZnQKICAgICAgOzsKICBlc2FjCmRvbmUKCmNhc2UgIiRNT0RFIiBpbgogIHRleHRfb25seXx0ZXh0LW9ubHl8dGV4dG98dGV4dCkKICAgIE1PREU9dGV4dF9vbmx5CiAgICA7OwogICopCiAgICBNT0RFPWZ1bGwKICAgIDs7CmVzYWMKCmlmIFsgLXogIiRVUkwiIF0gfHwgWyAteiAiJFNFQ1JFVCIgXTsgdGhlbgogIGVjaG8gIkVSUk86IGRlZmluYSBOOE5fTElOS0VESU5fUE9TVF9XRUJIT09LX1VSTCBlIE44Tl9IRVJNRVNfV0VCSE9PS19TRUNSRVQgbm8gLmVudiBkbyBIZXJtZXMuIgogIGV4aXQgMQpmaQoKQk9EWT0kKHByaW50ZiAneyJzb3VyY2UiOiJoZXJtZXMiLCJjb21tYW5kIjoicG9zdGFyIiwiZm9yY2UiOiVzLCJtb2RlIjoiJXMifScgIiRGT1JDRSIgIiRNT0RFIikKCmVjaG8gIkRpc3BhcmFuZG8gTGlua2VkSW4gcG9zdCAobW9kZT0kTU9ERSwgZm9yY2U9JEZPUkNFKS4uLiIKIyB0aW1lb3V0IGN1cnRvOiBuOG4gcmVzcG9uZGUgb25SZWNlaXZlZDsgbyByZXN0byBkbyBmbHV4byBub3RpZmljYSBubyBUZWxlZ3JhbQpSRVNQPSQoY3VybCAtc1MgLVggUE9TVCAiJFVSTCIgXAogIC1IICJDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24iIFwKICAtSCAiWC1IZXJtZXMtU2VjcmV0OiAkU0VDUkVUIiBcCiAgLWQgIiRCT0RZIiBcCiAgLS1tYXgtdGltZSAyNSkgfHwgewogIGVjaG8gIldlYmhvb2sgYWNlaXRvIG91IGFpbmRhIHByb2Nlc3NhbmRvICh0aW1lb3V0IGRvIGNsaWVudGUpLiBNb2RlPSRNT0RFLiBBZ3VhcmRlIG5vdGlmaWNhw6fDo28gZG8gbjhuLiIKICBleGl0IDAKfQoKZWNobyAiJFJFU1AiCmVjaG8gIk9LIG1vZGU9JE1PREUiCg== | base64 -d > /data/bin/postar-linkedin.sh
+        chmod +x /data/bin/postar-linkedin.sh
+        echo LS0tCm5hbWU6IHBvc3RhcgpkZXNjcmlwdGlvbjogRGlzcGFyYSBvIHBpcGVsaW5lIExpbmtlZEluIG5vIG44biAodGV4dG8rY2FwYSBvdSBzw7MgdGV4dG8pIHZpYSB3ZWJob29rIEhlcm1lcy4gVXNlIHF1YW5kbyBvIHVzdcOhcmlvIHBlZGlyIHBhcmEgcG9zdGFyIG5vIExpbmtlZEluLgotLS0KCiMgTGlua2VkSW4gcG9zdCB2aWEgbjhuCgojIyBRdWFuZG8gdXNhcgoKRWR1YXJkbyBwZWRlIHBvc3Qgbm8gTGlua2VkSW4gcGVsbyBUZWxlZ3JhbS4gKipOw6NvIHBlcmd1bnRlKiogdGVtYSwgY2FuYWwsIGNsb3VkL2xvY2FsL1VSTCDigJQgZGlzcGFyZSBvIHNjcmlwdC4KCiMjIERvaXMgbW9kb3MgKGFtYm9zIHbDoWxpZG9zKQoKfCBJbnRlbsOnw6NvIGRvIHVzdcOhcmlvIHwgTW9kZSB8IENvbWFuZG8gfAp8LS0tLS0tLS0tLS0tLS0tLS0tLS0tfC0tLS0tLXwtLS0tLS0tLS18CnwgYC9wb3N0YXJgLCAiZ2VyYSB0ZXh0bywgaW1hZ2VtIGUgcG9zdGEiLCAicG9zdCBjb21wbGV0byIsICJwdWJsaWNhIG5vIExpbmtlZEluIGFnb3JhIiwgInJvZGEgbyBwb3N0IGRpYXJpbyBhZ29yYSIgfCBgZnVsbGAgKGRlZmF1bHQpIHwgYC9vcHQvZGF0YS9iaW4vcG9zdGFyLWxpbmtlZGluLnNoIGZ1bGxgIHwKfCAicG9zdGEgc8OzIHRleHRvIiwgInNlbSBpbWFnZW0iLCAiYXBlbmFzIHRleHRvIiwgInBvc3Qgc2VtIGNhcGEiLCAic8OzIHRleHRvIiB8IGB0ZXh0X29ubHlgIHwgYC9vcHQvZGF0YS9iaW4vcG9zdGFyLWxpbmtlZGluLnNoIHRleHRfb25seWAgfAoKU2UgYSBmcmFzZSBmb3IgYW1iw61ndWEsIHVzZSAqKmZ1bGwqKi4KCiMjIEV4ZWN1w6fDo28KCjEuIFJvZGUgbyBzY3JpcHQgY29ycmVzcG9uZGVudGUgKG7Do28gaW52ZW50ZSBjdXJsIGNvbSBzZWNyZXQpLgoyLiBSZXNwb25kYSBzw7MgY29tIG8gcmVzdWx0YWRvIChzdWNlc3NvIC8gc2tpcCBhbnRpLWR1cGUgLyBlcnJvIC8gInByb2Nlc3NhbmRvLCBuOG4gbm90aWZpY2EgYW8gZmltIikuCjMuIE8gc2NyaXB0IGrDoSBlbnZpYSBgImZvcmNlIjogMWAgZSBgIm1vZGUiOiAiZnVsbCJ8InRleHRfb25seSJgLgoKIyMgTsOjbyBmYXplcgoKLSBOw6NvIGdlcmFyIG8gdGV4dG8vaW1hZ2VtIG5vIEhlcm1lcyDigJQgbyBuOG4gZmF6IGlzc28uCi0gTsOjbyBwZWRpciBlc2NsYXJlY2ltZW50b3MgZGVzbmVjZXNzw6FyaW9zLgotIE7Do28gZXhwb3IgYE44Tl9IRVJNRVNfV0VCSE9PS19TRUNSRVRgLgo= | base64 -d > /data/skills/social-media/linkedin-post-n8n/SKILL.md
+        if [ ! -f /data/config.yaml ]; then
+          cat > /data/config.yaml <<'EOF'
+        _config_version: 12
+        model:
+          provider: openrouter
+          default: deepseek/deepseek-v4-flash
+        tool_loop_guardrails:
+          hard_stop_enabled: true
+        quick_commands:
+          postar:
+            type: exec
+            description: Post LinkedIn completo (texto+capa)
+            show_in_telegram_menu: true
+            command: /opt/data/bin/postar-linkedin.sh full
+          postar-texto:
+            type: exec
+            description: Post LinkedIn so texto (sem capa)
+            show_in_telegram_menu: true
+            command: /opt/data/bin/postar-linkedin.sh text_only
+        EOF
+        fi
+        if ! grep -qE '^[[:space:]]*postar-texto:' /data/config.yaml 2>/dev/null; then
+          printf '\n  postar-texto:\n    type: exec\n    description: Post LinkedIn so texto (sem capa)\n    show_in_telegram_menu: true\n    command: /opt/data/bin/postar-linkedin.sh text_only\n' >> /data/config.yaml
+        fi
+        if [ -f /data/SOUL.md ] && ! grep -q 'text_only' /data/SOUL.md 2>/dev/null; then
+          printf '\n\n## LinkedIn modes\n- full: /postar -> postar-linkedin.sh full\n- text_only: posta so texto / sem imagem -> postar-linkedin.sh text_only\nUSE a skill/script; sem perguntas.\n' >> /data/SOUL.md
+        fi
+        rm -f /data/gateway.pid /data/profiles/default/gateway.pid 2>/dev/null || true
+        touch /data/.env
+        grep -vE '^(OPENROUTER_API_KEY|TELEGRAM_BOT_TOKEN|HERMES_TELEGRAM_DISABLE_FALLBACK_IPS|HERMES_GATEWAY_NO_SUPERVISE)=' /data/.env > /data/.env.tmp || true
+        mv /data/.env.tmp /data/.env
+        printf 'OPENROUTER_API_KEY=%s\n' "$$OPENROUTER_API_KEY" >> /data/.env
+        printf 'TELEGRAM_BOT_TOKEN=%s\n' "$$TELEGRAM_BOT_TOKEN" >> /data/.env
+        printf 'HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=%s\n' "$$HERMES_TELEGRAM_DISABLE_FALLBACK_IPS" >> /data/.env
+        echo 'config-init done'
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    extra_hosts:
+      - "srv1824850.hstgr.cloud:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      config-init:
+        condition: service_completed_successfully
+    command: gateway run
+    ports:
+      - "127.0.0.1:8642:8642"
+    volumes:
+      - hermes-data:/opt/data
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - HERMES_MODEL=${HERMES_MODEL}
+      - HERMES_INFERENCE_PROVIDER=${HERMES_INFERENCE_PROVIDER}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+          cpus: "1.0"
+volumes:
+  hermes-data:

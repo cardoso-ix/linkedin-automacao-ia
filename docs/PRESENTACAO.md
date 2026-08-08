@@ -1,58 +1,57 @@
 # Apresentação — Automação LinkedIn (didático)
 
 Timezone: **America/Sao_Paulo**  
-Dois fluxos em produção: **post diário** + **resposta a comentários**.
+Em produção: **Hermes (assistente Telegram)** + **n8n** (post sob comando + reply automático).
 
 ## Dor (30s)
 
 Especialista em IA precisa de presença constante no LinkedIn, mas escrever, diagramar, publicar e ainda responder comentários todo dia não escala. Sem sistema, a frequência cai e o engajamento esfria.
 
-## Arquitetura em 2 fluxos
+## Arquitetura
 
-| Fluxo | O que acontece no n8n |
-|-------|------------------------|
-| **Post 08:00** | Tema Dia N → DeepSeek-V4-Flash (texto) → FLUX.2 Pro (capa editorial, 8 estilos, sem texto) → LinkedIn IMAGE ou fallback só texto → Data Table + Telegram |
-| **Reply ~2 min** | Sheets monitor → HTML do post → parse de comentários → DeepSeek-V4-Flash → reply no LinkedIn → mark done |
+| Camada | O que faz |
+|--------|-----------|
+| **Hermes** | Assistente no Telegram: `/postar` ou `/postar-texto` dispara o pipeline |
+| **n8n Post** | Tema Dia N → DeepSeek → (opcional) FLUX capa → LinkedIn → Telegram |
+| **n8n Reply ~2 min** | Sheets → HTML → DeepSeek → reply LinkedIn |
+
+**Sem cron de post às 08:00** — você decide quando publicar.
 
 ```
-08:00  Post Diario Texto (ysHFWIV0tGWJbhjo)
-         anti-dupe → Dia N (1–30) → DeepSeek-V4-Flash
-         → capa FLUX.2 Pro (8 estilos) → LinkedIn
-         → Telegram ok / skip / fail
+Telegram → Hermes → webhook n8n (ysHFWIV0tGWJbhjo)
+         anti-dupe → Dia N → DeepSeek → capa ou só texto → LinkedIn
 
-*/2m   Resposta Comentarios Post (q28d2xJlAgvMpZ9Z)
-         Sheets → HTML → parse → DeepSeek-V4-Flash
-         → HTTP reply → Sheets tracking
+*/2m   Resposta Comentarios (q28d2xJlAgvMpZ9Z)
+         Sheets → HTML → DeepSeek → reply
 ```
 
-> **Fora do portfólio:** Resposta via Gmail — arquivado.
+> **Fora do portfólio:** Resposta via Gmail — arquivado.  
+> Detalhe do assistente: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md)
 
 ## O que abrir na tela
 
 1. Post: https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo  
 2. Reply: https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z  
 3. Data Table **LinkedIn Posts Diario** (anti-dupe)  
-4. Post + replies no LinkedIn (prova final)
+4. Telegram Hermes + post/replies no LinkedIn (prova final)
 
 ## Fala-chave (1 min)
 
-> “O Cursor foi onde eu desenhei o sistema. Em produção, o n8n orquestra dois fluxos: às 08:00 escolhe o tema do dia, gera o texto com DeepSeek-V4-Flash via OpenRouter e uma capa editorial com FLUX.2 Pro — ilustração abstrata sem texto, oito estilos em rotação — e publica no LinkedIn. Em paralelo, a cada dois minutos o segundo fluxo monitora posts recentes, lê os comentários no HTML e responde com o mesmo DeepSeek, no tom da newsletter. Se a imagem falhar, o texto sai mesmo assim. Gmail de reply ficou no arquivo.”
+> “Desenhei o sistema no Cursor. Em produção, o Hermes no Telegram é meu assistente: eu mando postar e ele dispara o n8n. O n8n escolhe o tema do dia, gera o texto com DeepSeek-V4-Flash via OpenRouter e, se eu pedir o post completo, uma capa editorial com FLUX.2 Pro — sem tipografia na arte. Também posso pedir só texto. Em paralelo, a cada dois minutos o segundo fluxo lê comentários e responde com o mesmo DeepSeek. Não tem post automático de manhã — eu controlo o timing pelo Telegram.”
 
-## Como testar o post com imagem
+## Como testar o post
 
-1. Garantir que ainda **não** há post do dia em Posts Diario (senão skip)  
-2. **Execute once** no workflow (ou esperar 08:00)  
-3. Conferir LinkedIn + Telegram “Texto + capa FLUX.2 Pro” (ou aviso só texto se fallback)  
-4. Referência de sucesso: execução `5712` · `urn:li:share:7489362507237675008`
+1. No Telegram: `/postar` (completo) ou `/postar-texto`  
+2. Conferir LinkedIn + alerta Telegram  
+3. n8n Executions com origem **webhook**
 
 ## Como testar a resposta a comentários
 
 1. Abrir [Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)  
-2. Confirmar nó **Generate Reply Text** = DeepSeek-V4-Flash (OpenRouter)  
-3. Comentar em um post monitorado (últimas 48h) ou **Execute once**  
-4. Em ~2 min: reply publicado + linha marcada no Sheets  
-5. Prompt: `prompts/resposta-comentario.json` · Skill: `skills/linkedin-resposta-comentario/`
+2. **Generate Reply Text** = DeepSeek-V4-Flash  
+3. Comentar em post monitorado ou **Execute once**  
+4. Em ~2 min: reply + mark done no Sheets
 
 ## Stack em uma linha
 
-n8n (VPS) · OpenRouter DeepSeek-V4-Flash · FLUX.2 Pro · LinkedIn OAuth/REST · Sheets · Telegram
+Hermes (Telegram) · n8n (VPS) · OpenRouter DeepSeek-V4-Flash · FLUX.2 Pro · LinkedIn · Sheets · Telegram alerta

@@ -1,16 +1,17 @@
-# Checklist — arquitetura ativa
+# Checklist — arquitetura ativa (Hermes + n8n)
 
 ## Antes de ativar
 
 - [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — OpenRouter (texto + capa) + LinkedIn
-- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — DeepSeek OpenRouter + Sheets/HTML + LinkedIn
-- [ ] Credencial **OpenRouter account** no DeepSeek (post e reply) **e** no nó Generate Cover Flux Pro
+- [ ] Nó **Daily 8h Sao Paulo** **desabilitado** (post só via Hermes)
+- [ ] Webhook Hermes + secret alinhado com `.env` do container Hermes
+- [ ] Hermes: `/postar` e `/postar-texto` + skill `linkedin-post-n8n`
+- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — DeepSeek + Sheets/HTML + LinkedIn
+- [ ] Credencial **OpenRouter account** (texto, FLUX, reply)
 - [ ] Modelos: `deepseek/deepseek-v4-flash` + `black-forest-labs/flux.2-pro`
-- [ ] Stickies de reply sem menção a GPT-3.5 (usar DeepSeek-V4-Flash)
 - [ ] Resposta via Gmail permanece **arquivado**
 - [ ] Timezone `America/Sao_Paulo`
-- [ ] Schedule post: `0 8 * * *`
-- [ ] Data Table **LinkedIn Posts Diario** ok (anti-dupe)
+- [ ] Data Table **LinkedIn Posts Diario** ok (anti-dupe; `force=1` bypass)
 - [ ] Draft publicado (**Publish**) após mudanças no canvas
 
 ## Regras do post
@@ -19,9 +20,9 @@
 - [ ] Sem URLs no corpo
 - [ ] 1000–1800 caracteres (parágrafos corridos)
 - [ ] Sem travessão / emojis / jargão vazio
-- [ ] Entre 3 e 5 hashtags temáticas misturadas conforme o assunto
+- [ ] Entre 3 e 5 hashtags temáticas
 - [ ] Fechar com reflexão ou convite leve ao comentário
-- [ ] Capa **sem texto, sem letras e sem números** na arte (8 estilos round-robin)
+- [ ] Capa **sem texto, sem letras e sem números** (mode=full; 8 estilos round-robin)
 
 ## Respostas a comentários
 
@@ -32,8 +33,8 @@
 
 ## Validação rápida
 
-1. Executar **Post Diario Texto** (1x) — ou conferir skip se já postou hoje
-2. Conferir Telegram: “Texto + capa FLUX.2 Pro” (ou aviso só texto se fallback)
-3. Executar **Resposta Comentarios Post** (1x) ou aguardar poll 2 min
-4. Conferir Executions no n8n
-5. Lembrete: mudanças no canvas ficam em **draft** até Publish
+1. Telegram `/postar` → texto + capa (ou fallback só texto)
+2. Telegram `/postar-texto` → só texto
+3. Conferir Executions: origem **webhook**
+4. Aguardar poll ~2 min no fluxo de comments (ou Execute once)
+5. Mudanças no canvas ficam em **draft** até Publish
