@@ -7,7 +7,7 @@ Sistema em produção: o **Hermes** (Telegram) é o assistente operacional; o **
 | **Hermes** (`@funcionario_vip_bot`) | Ajuda a escrever no chat; dispara webhooks de fila/post |
 | **n8n** | Guarda texto/foto da fila, publica no LinkedIn, responde comentários |
 
-**Post diário automático às 08:00 (SP) ATIVO.** Também aceita comando manual via Telegram (`/postar`).
+**Post sob comando via Hermes (Telegram).** Schedule 08:00 está **desativado** — você decide quando postar.
 
 | Fluxo | Disparo | Stack |
 |-------|---------|--------|
@@ -120,9 +120,9 @@ Arquivos em `hermes/` para deploy no container (secrets só no `.env` da VPS):
 |--------|------------|
 | Assistente | Hermes Agent (Docker na VPS) + Telegram |
 | Orquestração | n8n (VPS Hostinger KVM 2) |
-| Texto do post | Fila de textos validados via Telegram (sem LLM no n8n) |
-| Imagem do post | Foto real enviada no Telegram (fila `ready`) |
-| Reply | OpenCode Go **deepseek-v4-flash** |
+| Texto do post | Fila de textos validados pelo usuário (sem LLM no n8n) |
+| Imagem do post | Foto própria criada pelo usuário, via Telegram |
+| Reply | DeepSeek-V4-Flash via API LinkedIn |
 | Publicação | LinkedIn OAuth + REST comments |
 | Memória de posts | Data Table `LinkedIn Posts Diario` |
 | Fila de fotos | Data Table `LinkedIn Imagens Agenda` |

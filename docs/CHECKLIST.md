@@ -3,7 +3,7 @@
 ## Antes de ativar
 
 - [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — Active
-- [ ] Schedule 08:00 (São Paulo) **habilitado** — post diário automático
+- [ ] Schedule 08:00 (São Paulo) **desabilitado** — post só via Hermes (Telegram)
 - [ ] Webhook Hermes + secret alinhado com `.env` do container Hermes
 - [ ] Hermes: `/postar`, `/postar-texto`, `/salvar-texto`, `/salvar-foto`, `/monitorar`
 - [ ] Workflow **LinkedIn Salvar Texto Hermes** (`aPTD3w3uZCuz11tP`) — Active
@@ -27,7 +27,7 @@
 
 ## Respostas a comentários
 
-- [ ] Modelo: DeepSeek-V4-Flash via OpenCode Go
+- [ ] Modelo: DeepSeek-V4-Flash (reply via API LinkedIn)
 - [ ] Tom da skill `linkedin-resposta-comentario`
 - [ ] Wait entre replies para não flood
 - [ ] Posts monitorados < 48h (após isso, saem do poll)

@@ -8,7 +8,7 @@ Este projeto roda em dois containers na VPS Hostinger (KVM 2): **Hermes** (assis
 2. Confirmar credencial **LinkedIn account** (OAuth válido)
 3. Confirmar credencial **OpenCode Go** — texto e reply (DeepSeek-V4-Flash)
 4. Fluxos: ver [FLUXO.md](FLUXO.md) · Assistente: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md)
-5. Workflow **Post Diario Texto**: Active (schedule 08:00 + webhook Hermes)
+5. Workflow **Post Diario Texto**: Active (schedule OFF — post via webhook Hermes)
 6. Workflow **Salvar Texto Hermes**: Active
 7. Workflow **Salvar Foto Hermes**: Active
 8. Workflow **Registrar Post Monitor**: Active
@@ -19,7 +19,7 @@ Este projeto roda em dois containers na VPS Hostinger (KVM 2): **Hermes** (assis
 
 | Nome | ID | Tipo |
 |------|-----|------|
-| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | Schedule + Webhook |
+| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | Webhook (schedule OFF) |
 | LinkedIn Salvar Texto Hermes | `aPTD3w3uZCuz11tP` | Webhook |
 | LinkedIn Salvar Foto Hermes | `HIlMXIjvjjxwcGlo` | Webhook |
 | LinkedIn Registrar Post Monitor | `1tqbFp0ft3GsxTgK` | Webhook |
@@ -29,9 +29,9 @@ Este projeto roda em dois containers na VPS Hostinger (KVM 2): **Hermes** (assis
 
 | Uso | Stack |
 |-----|--------|
-| Post (texto) | Fila de textos (escrito manualmente + Hermes, sem LLM no n8n) |
-| Post (imagem) | Foto real enviada via Telegram (fila `ready`) |
-| Reply comentário | OpenCode Go `deepseek-v4-flash` |
+| Post (texto) | Fila de textos validados pelo usuário (sem LLM no n8n) |
+| Post (imagem) | Foto própria criada pelo usuário, enviada via Telegram |
+| Reply comentário | DeepSeek-V4-Flash via API LinkedIn |
 
 ## Validação rápida
 

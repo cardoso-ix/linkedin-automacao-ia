@@ -2,7 +2,7 @@
 
 O **Hermes** no Telegram (`@funcionario_vip_bot`) é o assistente: você manda o comando e ele dispara o n8n.
 
-O schedule **Daily 8h Sao Paulo (08:00)** está **ATIVO**. Post diário automático + disparo manual via comando.
+O schedule **Daily 8h Sao Paulo (08:00)** está **DESATIVADO**. Post é disparado sob comando via Hermes no Telegram.
 
 ## Papéis
 
@@ -212,7 +212,7 @@ Workflow `q28d2xJlAgvMpZ9Z` — **automático** (não passa pelo Hermes):
 1. Pedidos de post → disparo imediato (sem esclarecimento).  
 2. Anti-dupe: sem `force=1`, skip se já houver post no dia.  
 3. Hermes envia `"force": 1` (pode republicar no mesmo dia se pedir de novo).  
-4. Schedule 08:00 do POST está **ON** (diário automático).  
+4. Schedule 08:00 do POST permanece **OFF** (post só via comando Hermes).  
 5. Post via `/postar` já entra no Monitor — **não** chamar `/monitorar` de novo.  
 6. Post **manual** → Hermes **deve** chamar `/monitorar` (gravar na tabela).  
 7. Texto validado → Hermes **deve** chamar `/salvar-texto` antes do `/postar`.  
