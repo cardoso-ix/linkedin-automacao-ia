@@ -1,61 +1,30 @@
 {
-  "id": "ysHFWIV0tGWJbhjo",
   "name": "LinkedIn Post Diario Texto",
-  "active": true,
-  "description": "Webhook Hermes: mode full (texto+capa) ou text_only. Schedule 08:00 OFF.",
-  "url": "https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo",
-  "timezone": "America/Sao_Paulo",
-  "schedule": "0 8 * * *",
-  "nodes": [
-    "Daily 8h Sao Paulo",
-    "Get Recent Posts",
+  "id": "ysHFWIV0tGWJbhjo",
+  "description": "Webhook Hermes: mode full (texto da fila + foto da fila) ou text_only. Schedule 08:00 OFF. Sem LLM/FLUX no path de post.",
+  "triggers": ["Hermes Webhook", "Daily 8h Sao Paulo"],
+  "keyNodes": [
+    "Get Ready Text",
+    "Sanitize Post Text",
     "Already Posted Today",
     "IF Already Posted",
-    "Build Theme Context",
-    "Generate Post Text",
-    "DeepSeek V4 Flash",
-    "Sanitize Post Text",
-    "Build Cover Prompt",
-    "Generate Cover Flux Pro",
-    "Prepare Flux Binary",
-    "Check Cover Ready",
-    "IF Cover OK",
+    "Get Ready Photo",
+    "IF Has Ready Photo",
     "Post With Image",
     "Post Text Only",
-    "Save Posted Row",
-    "Normalize Post Meta",
-    "Save Posts Monitor",
-    "Build Notify Message",
-    "Notify Telegram",
-    "Skip Already Posted",
-    "Build Skip Notify",
-    "Notify Telegram Skip",
-    "Build Fail Notify"
+    "Mark Text Used",
+    "Mark Photo Used",
+    "Save Posts Monitor"
   ],
-  "model": "deepseek/deepseek-v4-flash",
-  "textProvider": "openrouter",
-  "imageModel": "black-forest-labs/flux.2-pro",
-  "imageProvider": "openrouter",
-  "imageEndpoint": "https://openrouter.ai/api/v1/images",
-  "credential": "OpenRouter account (texto + imagem)",
-  "fallback": "post_text_only",
-  "themes": "docs/TEMAS.md (Dia N = tema N, 30/mês)",
-  "coverStyles": 8,
-  "prompts": {
-    "text": "prompts/post-texto.json",
-    "cover": "prompts/post-imagem-capa.json"
+  "textSource": "telegram_queue (LinkedIn Textos Agenda status=ready)",
+  "imageSource": "telegram_queue (LinkedIn Imagens Agenda status=ready)",
+  "fallback": "sem texto ready → abort + notify; sem foto → post_text_only",
+  "dataTables": {
+    "postsDiario": { "name": "LinkedIn Posts Diario", "id": "mayfOqKniH3iFbiw" },
+    "textosAgenda": { "name": "LinkedIn Textos Agenda", "id": "m1I5Y0xmJEGCsdIM" },
+    "imagensAgenda": { "name": "LinkedIn Imagens Agenda", "id": "iuKvPfKaSd77gl4H" },
+    "postsMonitor": { "name": "LinkedIn Posts Monitor", "id": "nzIIPL5u32B4w1Wb" }
   },
-  "dataTable": {
-    "name": "LinkedIn Posts Diario",
-    "id": "mayfOqKniH3iFbiw"
-  },
-  "verifiedExecution": {
-    "id": 5712,
-    "shareUrn": "urn:li:share:7489362507237675008"
-  },
-  "note": "2026-08-08: IF Text Only Mode — text_only pula FLUX; full mantém capa. Schedule OFF.",
-  "postModes": [
-    "full",
-    "text_only"
-  ]
+  "postModes": ["full", "text_only"],
+  "note": "2026-08-11: texto e foto vem do Telegram (filas ready). n8n nao gera copy nem FLUX."
 }

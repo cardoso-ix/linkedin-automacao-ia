@@ -1,0 +1,27 @@
+{
+  "name": "LinkedIn Salvar Texto Hermes",
+  "id": "aPTD3w3uZCuz11tP",
+  "description": "Webhook Hermes: recebe texto validado no Telegram e enfileira na Data Table LinkedIn Textos Agenda (status=ready) para o proximo /postar.",
+  "webhook": {
+    "path": "hermes-linkedin-texto",
+    "method": "POST",
+    "url": "https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-texto"
+  },
+  "dataTable": {
+    "name": "LinkedIn Textos Agenda",
+    "id": "m1I5Y0xmJEGCsdIM",
+    "statusReady": "ready",
+    "source": "hermes"
+  },
+  "hermes": {
+    "command": "/salvar-texto",
+    "script": "hermes/bin/salvar-texto-linkedin.sh"
+  },
+  "payloadExample": {
+    "source": "hermes",
+    "command": "salvar-texto",
+    "postText": "...",
+    "tema": "Post Telegram"
+  },
+  "note": "n8n nao gera texto. Valide no Telegram, /salvar-texto, opcional /salvar-foto, depois /postar."
+}

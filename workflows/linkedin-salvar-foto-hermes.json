@@ -1,0 +1,30 @@
+{
+  "id": "HIlMXIjvjjxwcGlo",
+  "name": "LinkedIn Salvar Foto Hermes",
+  "active": true,
+  "description": "Webhook Hermes: recebe foto (base64) do Telegram, grava em disco do n8n e enfileira na Data Table LinkedIn Imagens Agenda (status=ready) para o próximo /postar.",
+  "url": "https://srv1897392.hstgr.cloud/workflow/HIlMXIjvjjxwcGlo",
+  "webhook": "https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto",
+  "auth": "Header X-Hermes-Secret (mesmo N8N_HERMES_WEBHOOK_SECRET; length >= 16)",
+  "dataTable": {
+    "id": "iuKvPfKaSd77gl4H",
+    "name": "LinkedIn Imagens Agenda",
+    "statusReady": "ready",
+    "statusUsed": "used"
+  },
+  "hermes": {
+    "command": "/salvar-foto",
+    "script": "hermes/bin/salvar-foto-linkedin.sh",
+    "skill": "hermes/skills/linkedin-foto-n8n/",
+    "env": "N8N_LINKEDIN_FOTO_WEBHOOK_URL"
+  },
+  "bodyExample": {
+    "source": "hermes",
+    "command": "salvar-foto",
+    "imageBase64": "<base64>",
+    "mimeType": "image/jpeg",
+    "caption": "Foto Telegram",
+    "tema": "Foto Telegram"
+  },
+  "note": "2026-08-11: disco Read/Write bloqueado no n8n — foto fica em Data Table coluna imageBase64; /postar converte base64. Script Hermes monta JSON com python3 (evita 422)."
+}

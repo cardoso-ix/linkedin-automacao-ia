@@ -3,7 +3,7 @@
   "name": "LinkedIn Resposta Comentarios Post",
   "active": true,
   "description": "A cada 2 min: Sheets monitor + HTML comments → DeepSeek-V4-Flash (OpenRouter) → reply LinkedIn → mark done. Sem Gmail.",
-  "url": "https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z",
+  "url": "https://srv1897392.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z",
   "poll": "every 2 minutes",
   "model": "deepseek/deepseek-v4-flash",
   "provider": "openrouter",

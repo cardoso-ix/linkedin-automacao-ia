@@ -34,7 +34,7 @@ Use quando o usuario pedir reply/resposta a comentario no proprio post, ou ao aj
 
 - Prompt n8n: `prompts/resposta-comentario.json` (`deepseek/deepseek-v4-flash` via OpenRouter)
 - Workflow: **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`)
-  https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z
+  https://srv1897392.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z
 - Nó: `Generate Reply Text` (AI Agent + `lmChatOpenRouter`)
 - Sanitize: `Prepare Reply Payload` (strip aspas/travessão; flag fórmula metrologia)
 - **Não usar** Resposta via Gmail (arquivado)

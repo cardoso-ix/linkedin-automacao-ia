@@ -39,21 +39,20 @@ Ex.: Dia 1 → `dashboard`; Dia 2 → `rede neural`; Dia 9 → `dashboard` de no
 
 Stack free / catálogo (**opcional, não default**): [`STACK-GRATUITA.md`](STACK-GRATUITA.md)
 
-## Fluxo ativo no n8n (FLUX.2 Pro via OpenRouter)
+## Fluxo ativo no n8n (foto Hermes; sem FLUX)
 
 ```
 Sanitize Post Text
-  → Build Cover Prompt (escolhe estilo + monta briefing)
-  → Generate Cover Flux Pro (OpenRouter FLUX.2 Pro, 1:1 png)
-  → Prepare Flux Binary
-  → Check Cover Ready → IF Cover OK
-       OK   → Post With Image
-       FAIL → Post Text Only
+  → IF Text Only Mode
+       text_only → Post Text Only
+       full → Get Ready Photo (Imagens Agenda, status=ready, source=hermes)
+            → tem foto? Read → Prepare → Post With Image (marca used)
+            → sem foto? Post Text Only (+ aviso no Telegram)
 ```
 
-Credencial: **OpenRouter account** (mesma do texto DeepSeek).
+Foto Hermes: disco n8n + Data Table **LinkedIn Imagens Agenda**. Nós FLUX permanecem no canvas **desabilitados** (legado).
 
-## Fluxo opcional (catálogo — gratuito)
+## Fluxo opcional (catálogo URL pública — legado)
 
 ```
 Sanitize Post Text
@@ -68,7 +67,7 @@ Data table: **LinkedIn Imagens Agenda** (`iuKvPfKaSd77gl4H`) — só necessário
 
 ## Fallback
 
-Se a geração FLUX.2 Pro falhar (créditos OpenRouter, erro de API, etc.), o fluxo publica **só o texto**. O Telegram reflete isso (`hasCover` / “Somente texto”).
+Sem foto `ready` na fila (ou `/postar-texto`), o fluxo publica **só o texto**. O Telegram reflete isso (“Somente texto”).
 
 ## Lote 1 — 30/07 a 03/08/2026 (legado / catálogo)
 

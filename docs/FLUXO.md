@@ -6,63 +6,131 @@ Timezone: **America/Sao_Paulo**
 
 | Camada | Papel |
 |--------|--------|
-| **Hermes** (Telegram) | Assistente: você comanda; ele dispara o post |
-| **n8n** | Braço operacional: gera, publica, responde comentários |
+| **Hermes** (Telegram) | Assistente: você comanda; ele enfileira texto/foto e dispara o post |
+| **n8n** | Braço operacional: publica no LinkedIn, responde comentários automaticamente |
 
-**Post sob comando apenas.** Schedule 08:00 **OFF**. Detalhes: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md).
+**Post diário automático às 08:00 (SP) ATIVO** + disparo manual via Hermes (`/postar`).
 
-## Workflows em uso (n8n)
+## Workflows ativos (n8n)
 
-| Workflow | ID | Status |
-|----------|-----|--------|
-| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | **ATIVO** — só webhook Hermes (schedule OFF) |
-| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | **ATIVO** — poll ~2 min |
+| Workflow | ID | Disparo |
+|----------|-----|---------|
+| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | Schedule 08:00 + webhook Hermes |
+| LinkedIn Salvar Texto Hermes | `aPTD3w3uZCuz11tP` | Webhook (texto da fila) |
+| LinkedIn Salvar Foto Hermes | `HIlMXIjvjjxwcGlo` | Webhook (foto da fila) |
+| LinkedIn Registrar Post Monitor | `1tqbFp0ft3GsxTgK` | Webhook (monitorar post manual) |
+| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | Schedule ~2 min (automático) |
 
-> **Arquivado:** LinkedIn Resposta via Gmail (`5xkPzzTcKwdsPymn`).
+## 1) Post LinkedIn (schedule + comando)
 
-## 1) Post LinkedIn sob comando (Hermes → n8n)
+**Workflow:** LinkedIn Post Diario Texto · ID `ysHFWIV0tGWJbhjo`
 
-**Workflow:** [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) · ID `ysHFWIV0tGWJbhjo`
-
-**Disparo:** Telegram → Hermes → webhook. Nó **Daily 8h Sao Paulo** desativado.
+**Disparos:** Schedule 08:00 (automático) OU Hermes → webhook.
 
 ```
-Telegram ( /postar | /postar-texto | frase )
-  → Hermes (script/skill)
-  → Hermes Webhook (secret)
-  → Get Recent Posts → anti-dupe (bypass se force=1)
-  → Build Theme Context (Dia N = tema N; 1–30)
-  → Generate Post Text (DeepSeek-V4-Flash) → Sanitize
+Schedule 08:00 / Telegram /postar
+  → Lê texto ready em LinkedIn Textos Agenda
+  → Se não houver texto → aborta + alerta Telegram
+  → Anti-dupe (bypass se force=1)
   → IF Text Only Mode
        text_only / sem_imagem → Post Text Only
-       full → Build Cover Prompt → FLUX.2 Pro → Post With Image
-              (fallback Post Text Only se capa falhar)
-  → Save Posted Row → Telegram alerta
+       full → Lê foto ready em LinkedIn Imagens Agenda
+              → foto encontrada → Post With Image
+              → sem foto → Post Text Only (fallback)
+  → Marca texto/foto como "used"
+  → Registra no LinkedIn Posts Monitor (auto-monitor)
+  → Notifica Telegram (sucesso / erro)
 ```
 
-- **Texto:** `deepseek/deepseek-v4-flash`  
-- **Imagem:** `black-forest-labs/flux.2-pro`  
-- Temas: [TEMAS.md](TEMAS.md) · Capas: [IMAGENS-LOTE.md](IMAGENS-LOTE.md)
+- **Texto:** fila `ready` em LinkedIn Textos Agenda (não gera com LLM)
+- **Imagem:** foto real enviada via Telegram (não usa FLUX)
+- **Reply model:** OpenCode Go `deepseek-v4-flash`
 
-## 2) Resposta a comentários (automático)
+## 2) Salvar texto (Hermes → fila)
 
-**Workflow:** [LinkedIn Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)
+**Workflow:** LinkedIn Salvar Texto Hermes · ID `aPTD3w3uZCuz11tP`
 
 ```
-Every 2 min
-  → Sheets monitor → HTML → parse comentários
-  → DeepSeek-V4-Flash → Post LinkedIn Reply → mark done
+Telegram → Hermes → POST /webhook/hermes-linkedin-texto
+  → Valida secret + texto (50–3000 chars)
+  → Supersede ready anterior (source=hermes)
+  → Insert LinkedIn Textos Agenda (status=ready)
+  → Responde { ok: true, charCount }
+```
+
+## 3) Salvar foto (Hermes → fila)
+
+**Workflow:** LinkedIn Salvar Foto Hermes · ID `HIlMXIjvjjxwcGlo`
+
+```
+Telegram → Hermes → POST /webhook/hermes-linkedin-foto
+  → Valida secret + base64
+  → Grava imagem no disco n8n
+  → Insert LinkedIn Imagens Agenda (status=ready)
+  → Responde { ok: true, filePath }
+```
+
+## 4) Registrar post manual para monitorar
+
+**Workflow:** LinkedIn Registrar Post Monitor · ID `1tqbFp0ft3GsxTgK`
+
+```
+Telegram → Hermes → POST /webhook/hermes-linkedin-monitor
+  → Parse URL/URN do LinkedIn
+  → Upsert LinkedIn Posts Monitor (status=monitoring)
+  → Responde { ok: true, postUrl }
+```
+
+## 5) Resposta a comentários (automático)
+
+**Workflow:** LinkedIn Resposta Comentarios Post · ID `q28d2xJlAgvMpZ9Z`
+
+```
+Every 2 min (schedule)
+  → Lê LinkedIn Posts Monitor (frescos < 48h)
+  → Busca comentários via API LinkedIn (HTML)
+  → Filtra novos (não respondidos)
+  → DeepSeek-V4-Flash gera reply
+  → Posta reply no LinkedIn
+  → Marca como respondido
 ```
 
 Não passa pelo Hermes. Prompt: [`prompts/resposta-comentario.json`](../prompts/resposta-comentario.json).
 
-## Data Tables / Sheets
+## Data Tables (n8n)
 
-| Recurso | Uso |
-|---------|-----|
-| **LinkedIn Posts Diario** | Memória / anti-dupe (`force=1` bypass) |
-| Google Sheets (monitor + already replied) | Fila do fluxo de comments |
+| Tabela | Função |
+|--------|--------|
+| **LinkedIn Textos Agenda** | Fila de textos (`ready` → `used`) |
+| **LinkedIn Imagens Agenda** | Fila de fotos (`ready` → `used`) |
+| **LinkedIn Posts Monitor** | Posts monitorados para auto-reply |
+| **LinkedIn Posts Diario** | Histórico / anti-dupe |
 
-## Legado
+## Diagrama geral
 
-Stack gratuita: [STACK-GRATUITA.md](STACK-GRATUITA.md) — **não** é o default.
+```
+Você (Telegram)
+  → Hermes (assistente)
+      → /salvar-texto  → webhook → Textos Agenda (ready)
+      → /salvar-foto   → webhook → Imagens Agenda (ready)
+      → /postar        → webhook → texto ready + foto ready → LinkedIn
+      → /monitorar URL → webhook → Posts Monitor
+
+Schedule 08:00 (automático)
+  → texto ready + foto ready → LinkedIn → Posts Monitor
+
+*/2m (automático, sem Hermes):
+  Posts Monitor → API LinkedIn → parse comentários
+  → DeepSeek → reply LinkedIn
+```
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|------------|
+| Assistente | Hermes Agent (Docker na VPS) + Telegram |
+| Orquestração | n8n (VPS Hostinger KVM 2) |
+| Reply IA | OpenCode Go `deepseek-v4-flash` |
+| Publicação | LinkedIn OAuth + REST |
+| Memória | Data Tables n8n |
+| Alertas | Telegram Bot |

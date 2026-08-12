@@ -30,8 +30,8 @@ Telegram → Hermes → webhook n8n (ysHFWIV0tGWJbhjo)
 
 ## O que abrir na tela
 
-1. Post: https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo  
-2. Reply: https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z  
+1. Post: https://srv1897392.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo  
+2. Reply: https://srv1897392.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z  
 3. Data Table **LinkedIn Posts Diario** (anti-dupe)  
 4. Telegram Hermes + post/replies no LinkedIn (prova final)
 
@@ -47,7 +47,7 @@ Telegram → Hermes → webhook n8n (ysHFWIV0tGWJbhjo)
 
 ## Como testar a resposta a comentários
 
-1. Abrir [Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)  
+1. Abrir [Resposta Comentarios Post](https://srv1897392.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)  
 2. **Generate Reply Text** = DeepSeek-V4-Flash  
 3. Comentar em post monitorado ou **Execute once**  
 4. Em ~2 min: reply + mark done no Sheets

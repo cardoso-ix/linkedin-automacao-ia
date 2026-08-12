@@ -1,121 +1,110 @@
-# VPS — acesso, n8n e organização
+# VPS — Hostinger KVM 2
 
-Servidor Hostinger usado pela automação LinkedIn.
+Servidor Hostinger usado pela automação LinkedIn (Hermes + n8n).
 
-## Link de acesso (n8n)
+## Dados da VPS
 
 | Item | Valor |
 |------|--------|
-| **URL pública** | https://srv1824850.hstgr.cloud/ |
-| **Post Diario Texto** | https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo |
-| **Resposta Comentarios Post** | https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z |
-| **SSH (Hostinger)** | `ssh root@srv1824850.hstgr.cloud` (ou usuário do painel) |
+| **Plano** | KVM 2 (8 GB RAM, 2 vCPUs, 100 GB NVMe) |
+| **ID Hostinger** | `1897392` |
+| **Hostname** | `srv1897392.hstgr.cloud` |
+| **Data Center** | Campinas, BR |
+| **SO** | Ubuntu 24.04 LTS com Docker |
+| **n8n URL** | https://srv1897392.hstgr.cloud/ |
+| **SSH** | `ssh root@srv1897392.hstgr.cloud` (chave `cursor-eduardo-hostinger`) |
 
-Confirmação (2026-07-17): a URL responde com a interface **n8n** (HTTPS ok).  
-Login: usuário/senha que você definiu na instalação (não fica neste repo).
-
-> Se a página não abrir: painel Hostinger → VPS → firewall (portas **80/443**) e containers ligados.
-
----
-
-## O n8n precisa ser Docker?
-
-**Não é obrigatório**, mas **sim, é a forma recomendada** — e é o que costuma estar na Hostinger com n8n + Caddy.
-
-| Forma | Quando usar |
-|-------|-------------|
-| **Docker (recomendado)** | Isola n8n, fácil atualizar (`docker compose pull`), Caddy/Nginx na frente com HTTPS |
-| npm / binário na máquina | Possível, mas mistura com o SO; atualizar e rollback são mais trabalhosos |
-| n8n Cloud | Já existe; manter **desligado** para LinkedIn (evitar post duplicado com a VPS) |
-
-Resumo: **deixe n8n em Docker** na VPS. Para um site no futuro, também use Docker (ou um container Nginx/Caddy + app).
-
-Layout típico que você já tinha no histórico do projeto:
-
-```
-/opt/n8n/                 # stack n8n
-  docker-compose.yml
-  .env                    # N8N_HOST, WEBHOOK_URL, chaves — NÃO commitar
-```
-
-Containers comuns: `n8n` + `caddy` (ou traefik) na porta 443.
+> Login n8n: usuário/senha definidos na instalação — **não** versionados neste repo.
 
 ---
 
-## Como organizar a VPS para vários projetos
+## Containers em produção
 
-Objetivo: n8n continua estável; dá para colocar site / API sem bagunçar.
-
-```
-/opt/
-  n8n/                    # automação (já existe)
-  sites/                  # futuros sites
-    meuportfolio/         # exemplo
-  apps/                   # APIs, bots, etc.
-  shared/
-    caddy/                # OU um Caddy global
-      Caddyfile
-  backups/
-```
-
-### Regra de ouro
-
-1. **Um projeto = uma pasta em `/opt/...` + um `docker-compose.yml`.**
-2. **Um reverse proxy na frente** (Caddy ou Traefik) com HTTPS.
-3. **Cada app numa porta interna**; o proxy publica o domínio.
-4. **Volumes nomeados** para dados (Postgres do n8n, uploads do site).
-5. **`.env` só no servidor** (nunca no GitHub).
-
-### Domínios (futuro)
-
-| Domínio / path | Serviço |
-|----------------|---------|
-| `srv1824850.hstgr.cloud` | n8n (hoje) |
-| `n8n.seudominio.com` | n8n (melhor, quando tiver domínio) |
-| `www.seudominio.com` | site |
-| `api.seudominio.com` | API |
-
-Enquanto só tiver o hostname Hostinger, o n8n pode ficar na raiz `/`.  
-Quando tiver domínio próprio, aponte DNS A → IP da VPS e configure o Caddy.
+| Container | Imagem | Função |
+|-----------|--------|--------|
+| `n8n` | `n8nio/n8n:2.28.6` | Automação LinkedIn (webhooks + schedule + reply) |
+| `caddy` | `caddy:2-alpine` | Reverse proxy HTTPS (portas 80/443/5678) |
+| `hermes` | `nousresearch/hermes-agent:latest` | Assistente Telegram — dispara webhooks |
 
 ---
 
-## Checklist de organização (fazer no SSH)
+## Estrutura de diretórios
 
-Quando tiver acesso SSH (chave no painel Hostinger):
+```
+Docker Manager (Hostinger):
+  projeto "n8n"    → n8n + caddy + volumes
+  projeto "hermes" → hermes agent + volume
+
+Volumes:
+  n8n_data     → /home/node/.n8n (workflows, credenciais, Data Tables)
+  caddy_data   → certificados HTTPS
+  caddy_config → config Caddy
+  hermes-data  → /opt/data (skills, scripts, SOUL.md)
+```
+
+---
+
+## Backups
+
+Backups automáticos habilitados na Hostinger (snapshots periódicos da VPS).
+
+---
+
+## Segurança
+
+- **Firewall**: portas 80, 443, 5678, 22 abertas; demais bloqueadas.
+- **SSH**: apenas via chave pública (`cursor-eduardo-hostinger`); senha root desabilitada para login remoto.
+- **HTTPS**: Caddy gera e renova certificados Let's Encrypt automaticamente.
+- **Secrets**: todos em `.env` no servidor — **nunca** versionados no Git.
+
+---
+
+## Env vars (referência — sem valores)
+
+### n8n (`.env`)
+
+| Variável | Função |
+|----------|--------|
+| `N8N_HOST` | Hostname público do n8n |
+| `N8N_PROTOCOL` | `https` |
+| `WEBHOOK_URL` | Base URL dos webhooks |
+| `N8N_ENCRYPTION_KEY` | Chave de criptografia das credenciais n8n |
+| `GENERIC_TIMEZONE` | `America/Sao_Paulo` |
+
+### Hermes (`.env`)
+
+| Variável | Função |
+|----------|--------|
+| `OPENROUTER_API_KEY` | Acesso à API OpenRouter |
+| `TELEGRAM_BOT_TOKEN` | Token do bot Telegram |
+| `HERMES_MODEL` | Modelo de inferência |
+| `HERMES_INFERENCE_PROVIDER` | Provider do modelo |
+| `N8N_LINKEDIN_FOTO_WEBHOOK_URL` | Webhook de fila de fotos |
+| `N8N_LINKEDIN_TEXTO_WEBHOOK_URL` | Webhook de fila de textos |
+
+> Para a lista completa, veja o Docker Compose de referência em `hermes/docker-compose.yml`.
+
+---
+
+## Manutenção
 
 ```bash
-# 1) Ver o que está rodando
+# Ver containers ativos
 docker ps
-ls -la /opt
 
-# 2) Achar o compose do n8n
-find /opt -name 'docker-compose*.yml' 2>/dev/null
+# Atualizar n8n (via Docker Manager ou manual)
+docker compose pull && docker compose up -d
 
-# 3) Backup rápido
-mkdir -p /opt/backups
-# (export workflows pelo n8n UI + backup do volume docker)
+# Logs n8n
+docker logs n8n --tail 100 -f
+
+# Logs Hermes
+docker logs hermes --tail 100 -f
+
+# Backup manual do volume n8n
+docker run --rm -v n8n_n8n_data:/data -v /opt/backups:/backup alpine \
+  tar czf /backup/n8n-data-$(date +%Y%m%d).tar.gz -C /data .
 ```
-
-Ordenar se estiver bagunçado:
-
-```bash
-sudo mkdir -p /opt/n8n /opt/sites /opt/apps /opt/backups
-# mover compose atual do n8n para /opt/n8n se estiver em outro lugar
-```
-
-Não mexer em volumes sem backup.
-
----
-
-## O que eu (Cursor) preciso para organizar de verdade
-
-Sem SSH daqui só dá para validar a URL. Para aplicar a estrutura no servidor, envie **uma** destas opções:
-
-1. Acesso SSH com chave (adicionar a chave pública da sua máquina no painel Hostinger), ou  
-2. Colar a saída de: `docker ps`, `ls -la /opt`, e o `docker-compose.yml` do n8n (sem secrets do `.env`).
-
-Aí dá para: confirmar pastas, documentar o compose real, e preparar o Caddy para um segundo projeto (site) sem derrubar o n8n.
 
 ---
 
@@ -123,43 +112,8 @@ Aí dá para: confirmar pastas, documentar o compose real, e preparar o Caddy pa
 
 | Onde | O quê |
 |------|--------|
-| Repo `linkedin-automacao-ia` | Workflows, prompts, docs |
-| VPS `/opt/n8n` | Runtime n8n + dados |
-| Futuro site | Outro repo + `/opt/sites/...` na VPS (ou Vercel, como o Consórcio) |
+| Repo `linkedin-automacao-ia` | Workflows (JSON), prompts, docs, skills, scripts de referência |
+| VPS (n8n) | Runtime: executa workflows, guarda credenciais e Data Tables |
+| VPS (Hermes) | Runtime: recebe comandos Telegram, dispara webhooks |
 
-Site estático/Next pode ir na **Vercel** (mais simples) e a VPS ficar só para **n8n + apps que precisam de servidor 24/7**.
-
----
-
-## Hermes (assistente Telegram)
-
-Na mesma VPS, container **Hermes** recebe comandos no Telegram e dispara o webhook do n8n. Post **não** é agendado às 08:00.
-
-| Item | Valor |
-|------|--------|
-| Container | `hermes` |
-| Dados | volume → `/opt/data` |
-| Script | `/opt/data/bin/postar-linkedin.sh` |
-| Compose de referência | `hermes/docker-compose.yml` no repo |
-| Doc | [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md) |
-
-Env no `.env` do Hermes (só na VPS): `OPENROUTER_*`, `TELEGRAM_BOT_TOKEN`, `N8N_LINKEDIN_POST_WEBHOOK_URL`, `N8N_HERMES_WEBHOOK_SECRET`.
-
-Layout sugerido:
-
-```
-/opt/
-  n8n/          # stack n8n
-  hermes/       # compose Hermes (ou volume Docker nomeado)
-```
-
-## Stack em produção (resumo)
-
-**Hermes** (Telegram) dispara o post; **n8n** gera/publica com OpenRouter DeepSeek-V4-Flash + FLUX.2 Pro (mode full) e responde comentários. Schedule 08:00 OFF. Gmail de reply arquivado. Detalhes: [FLUXO.md](FLUXO.md) · [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md).
-
-## Resumo
-
-1. **Link n8n:** https://srv1824850.hstgr.cloud/ — **está no ar**.  
-2. **Docker:** n8n + Hermes na mesma VPS.  
-3. **Organização:** `/opt/n8n`, Hermes, `/opt/sites`, `/opt/apps`, proxy HTTPS.  
-4. **Post:** só sob comando Telegram (Hermes → webhook).
+> API keys, tokens e senhas existem **apenas** no `.env` do servidor. Este repositório **não contém secrets**.

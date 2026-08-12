@@ -1,0 +1,27 @@
+{
+  "id": "1tqbFp0ft3GsxTgK",
+  "name": "LinkedIn Registrar Post Monitor",
+  "active": true,
+  "description": "Webhook Hermes: recebe postUrl/URN de post manual, normaliza URN e faz upsert na Data Table LinkedIn Posts Monitor (status=monitoring) para o reply automático de comentários.",
+  "url": "https://srv1897392.hstgr.cloud/workflow/1tqbFp0ft3GsxTgK",
+  "webhook": "https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-monitor",
+  "auth": "Header X-Hermes-Secret (mesmo N8N_HERMES_WEBHOOK_SECRET)",
+  "dataTable": {
+    "id": "nzIIPL5u32B4w1Wb",
+    "name": "LinkedIn Posts Monitor"
+  },
+  "hermes": {
+    "command": "/monitorar",
+    "script": "hermes/bin/monitorar-linkedin.sh",
+    "skill": "hermes/skills/linkedin-monitor-n8n/",
+    "env": "N8N_LINKEDIN_MONITOR_WEBHOOK_URL"
+  },
+  "bodyExample": {
+    "source": "hermes",
+    "command": "monitorar",
+    "postUrl": "https://www.linkedin.com/posts/...activity-123...",
+    "tema": "Post manual",
+    "postText": ""
+  },
+  "note": "Posts via /postar ja entram no Monitor pelo workflow ysHFWIV0tGWJbhjo. Este webhook cobre posts manuais."
+}

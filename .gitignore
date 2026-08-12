@@ -4,10 +4,13 @@ __pycache__/
 .venv/
 venv/
 
-# Secrets
+# Secrets — NUNCA versionar
 .env
+.env.*
 *.pem
-*api*key*
+*.key
+*credentials*
+*secret*
 
 # OS
 .DS_Store
@@ -16,3 +19,4 @@ Thumbs.db
 # IDE
 .idea/
 .vscode/
+.cursor/

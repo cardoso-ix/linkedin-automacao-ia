@@ -5,28 +5,184 @@ services:
       - hermes-data:/data
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}
+      - OPENCODE_GO_BASE_URL=${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
     restart: "no"
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        mkdir -p /data /data/bin /data/skills/social-media/linkedin-post-n8n
+        mkdir -p /data /data/bin /data/skills/social-media/linkedin-post-n8n /data/skills/social-media/linkedin-monitor-n8n /data/skills/social-media/linkedin-foto-n8n
         echo IyEvdXNyL2Jpbi9lbnYgc2gKIyBEaXNwYXJhIHdlYmhvb2sgbjhuIGhlcm1lcy1saW5rZWRpbi1wb3N0LgojIFVzbzoKIyAgIHBvc3Rhci1saW5rZWRpbi5zaCAgICAgICAgICAgICAgIyBtb2RlPWZ1bGwgKHRleHRvICsgY2FwYSkKIyAgIHBvc3Rhci1saW5rZWRpbi5zaCBmdWxsCiMgICBwb3N0YXItbGlua2VkaW4uc2ggdGV4dF9vbmx5CiMgICBwb3N0YXItbGlua2VkaW4uc2ggLS1tb2RlIHRleHRfb25seQojICAgTU9ERT10ZXh0X29ubHkgcG9zdGFyLWxpbmtlZGluLnNoCgpzZXQgLWV1CgpVUkw9IiR7TjhOX0xJTktFRElOX1BPU1RfV0VCSE9PS19VUkw6LX0iClNFQ1JFVD0iJHtOOE5fSEVSTUVTX1dFQkhPT0tfU0VDUkVUOi19IgpNT0RFPSIke01PREU6LWZ1bGx9IgoKdXNhZ2UoKSB7CiAgZWNobyAiVXNvOiBwb3N0YXItbGlua2VkaW4uc2ggW2Z1bGx8dGV4dF9vbmx5XSBbLS1tb2RlIGZ1bGx8dGV4dF9vbmx5XSBbLS1mb3JjZSAwfDFdIgp9CgpGT1JDRT0xCndoaWxlIFsgJCMgLWd0IDAgXTsgZG8KICBjYXNlICIkMSIgaW4KICAgIGZ1bGx8Y29tcGxldG98d2l0aF9pbWFnZXxjb21faW1hZ2VtKQogICAgICBNT0RFPWZ1bGwKICAgICAgc2hpZnQKICAgICAgOzsKICAgIHRleHRfb25seXx0ZXh0LW9ubHl8dGV4dG98c2VtX2ltYWdlbXxzZW0taW1hZ2VtfG5vX2ltYWdlKQogICAgICBNT0RFPXRleHRfb25seQogICAgICBzaGlmdAogICAgICA7OwogICAgLS1tb2RlfC1tKQogICAgICBNT0RFPSIkMiIKICAgICAgc2hpZnQgMgogICAgICA7OwogICAgLS1mb3JjZXwtZikKICAgICAgRk9SQ0U9IiQyIgogICAgICBzaGlmdCAyCiAgICAgIDs7CiAgICAtLWhlbHB8LWgpCiAgICAgIHVzYWdlCiAgICAgIGV4aXQgMAogICAgICA7OwogICAgKikKICAgICAgIyBhY2VpdGEgZnJhc2Ugc29sdGEgdmluZGEgZG8gTExNL3NraWxsCiAgICAgIGxvd2VyPSQocHJpbnRmICclcycgIiQxIiB8IHRyICdbOnVwcGVyOl0nICdbOmxvd2VyOl0nKQogICAgICBjYXNlICIkbG93ZXIiIGluCiAgICAgICAgKnNvXCB0ZXh0byp8KnPDs1wgdGV4dG8qfCpzZW1cIGltYWdlbSp8KmFwZW5hc1wgdGV4dG8qfCpzZW1cIGNhcGEqfCp0ZXh0X29ubHkqKQogICAgICAgICAgTU9ERT10ZXh0X29ubHkKICAgICAgICAgIDs7CiAgICAgICAgKmNvbXBsZXRvKnwqY29tXCBpbWFnZW0qfCpnZXJhXCB0ZXh0byp8KnBvc3RcIGNvbXBsZXRvKnwqZnVsbCopCiAgICAgICAgICBNT0RFPWZ1bGwKICAgICAgICAgIDs7CiAgICAgIGVzYWMKICAgICAgc2hpZnQKICAgICAgOzsKICBlc2FjCmRvbmUKCmNhc2UgIiRNT0RFIiBpbgogIHRleHRfb25seXx0ZXh0LW9ubHl8dGV4dG98dGV4dCkKICAgIE1PREU9dGV4dF9vbmx5CiAgICA7OwogICopCiAgICBNT0RFPWZ1bGwKICAgIDs7CmVzYWMKCmlmIFsgLXogIiRVUkwiIF0gfHwgWyAteiAiJFNFQ1JFVCIgXTsgdGhlbgogIGVjaG8gIkVSUk86IGRlZmluYSBOOE5fTElOS0VESU5fUE9TVF9XRUJIT09LX1VSTCBlIE44Tl9IRVJNRVNfV0VCSE9PS19TRUNSRVQgbm8gLmVudiBkbyBIZXJtZXMuIgogIGV4aXQgMQpmaQoKQk9EWT0kKHByaW50ZiAneyJzb3VyY2UiOiJoZXJtZXMiLCJjb21tYW5kIjoicG9zdGFyIiwiZm9yY2UiOiVzLCJtb2RlIjoiJXMifScgIiRGT1JDRSIgIiRNT0RFIikKCmVjaG8gIkRpc3BhcmFuZG8gTGlua2VkSW4gcG9zdCAobW9kZT0kTU9ERSwgZm9yY2U9JEZPUkNFKS4uLiIKIyB0aW1lb3V0IGN1cnRvOiBuOG4gcmVzcG9uZGUgb25SZWNlaXZlZDsgbyByZXN0byBkbyBmbHV4byBub3RpZmljYSBubyBUZWxlZ3JhbQpSRVNQPSQoY3VybCAtc1MgLVggUE9TVCAiJFVSTCIgXAogIC1IICJDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL2pzb24iIFwKICAtSCAiWC1IZXJtZXMtU2VjcmV0OiAkU0VDUkVUIiBcCiAgLWQgIiRCT0RZIiBcCiAgLS1tYXgtdGltZSAyNSkgfHwgewogIGVjaG8gIldlYmhvb2sgYWNlaXRvIG91IGFpbmRhIHByb2Nlc3NhbmRvICh0aW1lb3V0IGRvIGNsaWVudGUpLiBNb2RlPSRNT0RFLiBBZ3VhcmRlIG5vdGlmaWNhw6fDo28gZG8gbjhuLiIKICBleGl0IDAKfQoKZWNobyAiJFJFU1AiCmVjaG8gIk9LIG1vZGU9JE1PREUiCg== | base64 -d > /data/bin/postar-linkedin.sh
         chmod +x /data/bin/postar-linkedin.sh
         echo LS0tCm5hbWU6IHBvc3RhcgpkZXNjcmlwdGlvbjogRGlzcGFyYSBvIHBpcGVsaW5lIExpbmtlZEluIG5vIG44biAodGV4dG8rY2FwYSBvdSBzw7MgdGV4dG8pIHZpYSB3ZWJob29rIEhlcm1lcy4gVXNlIHF1YW5kbyBvIHVzdcOhcmlvIHBlZGlyIHBhcmEgcG9zdGFyIG5vIExpbmtlZEluLgotLS0KCiMgTGlua2VkSW4gcG9zdCB2aWEgbjhuCgojIyBRdWFuZG8gdXNhcgoKRWR1YXJkbyBwZWRlIHBvc3Qgbm8gTGlua2VkSW4gcGVsbyBUZWxlZ3JhbS4gKipOw6NvIHBlcmd1bnRlKiogdGVtYSwgY2FuYWwsIGNsb3VkL2xvY2FsL1VSTCDigJQgZGlzcGFyZSBvIHNjcmlwdC4KCiMjIERvaXMgbW9kb3MgKGFtYm9zIHbDoWxpZG9zKQoKfCBJbnRlbsOnw6NvIGRvIHVzdcOhcmlvIHwgTW9kZSB8IENvbWFuZG8gfAp8LS0tLS0tLS0tLS0tLS0tLS0tLS0tfC0tLS0tLXwtLS0tLS0tLS18CnwgYC9wb3N0YXJgLCAiZ2VyYSB0ZXh0bywgaW1hZ2VtIGUgcG9zdGEiLCAicG9zdCBjb21wbGV0byIsICJwdWJsaWNhIG5vIExpbmtlZEluIGFnb3JhIiwgInJvZGEgbyBwb3N0IGRpYXJpbyBhZ29yYSIgfCBgZnVsbGAgKGRlZmF1bHQpIHwgYC9vcHQvZGF0YS9iaW4vcG9zdGFyLWxpbmtlZGluLnNoIGZ1bGxgIHwKfCAicG9zdGEgc8OzIHRleHRvIiwgInNlbSBpbWFnZW0iLCAiYXBlbmFzIHRleHRvIiwgInBvc3Qgc2VtIGNhcGEiLCAic8OzIHRleHRvIiB8IGB0ZXh0X29ubHlgIHwgYC9vcHQvZGF0YS9iaW4vcG9zdGFyLWxpbmtlZGluLnNoIHRleHRfb25seWAgfAoKU2UgYSBmcmFzZSBmb3IgYW1iw61ndWEsIHVzZSAqKmZ1bGwqKi4KCiMjIEV4ZWN1w6fDo28KCjEuIFJvZGUgbyBzY3JpcHQgY29ycmVzcG9uZGVudGUgKG7Do28gaW52ZW50ZSBjdXJsIGNvbSBzZWNyZXQpLgoyLiBSZXNwb25kYSBzw7MgY29tIG8gcmVzdWx0YWRvIChzdWNlc3NvIC8gc2tpcCBhbnRpLWR1cGUgLyBlcnJvIC8gInByb2Nlc3NhbmRvLCBuOG4gbm90aWZpY2EgYW8gZmltIikuCjMuIE8gc2NyaXB0IGrDoSBlbnZpYSBgImZvcmNlIjogMWAgZSBgIm1vZGUiOiAiZnVsbCJ8InRleHRfb25seSJgLgoKIyMgTsOjbyBmYXplcgoKLSBOw6NvIGdlcmFyIG8gdGV4dG8vaW1hZ2VtIG5vIEhlcm1lcyDigJQgbyBuOG4gZmF6IGlzc28uCi0gTsOjbyBwZWRpciBlc2NsYXJlY2ltZW50b3MgZGVzbmVjZXNzw6FyaW9zLgotIE7Do28gZXhwb3IgYE44Tl9IRVJNRVNfV0VCSE9PS19TRUNSRVRgLgo= | base64 -d > /data/skills/social-media/linkedin-post-n8n/SKILL.md
+        # --- monitorar: script + skill (post manual -> Posts Monitor) ---
+        cat > /data/bin/monitorar-linkedin.sh <<'MONEOF'
+        #!/usr/bin/env sh
+        set -eu
+        URL="${N8N_LINKEDIN_MONITOR_WEBHOOK_URL:-}"
+        SECRET="${N8N_HERMES_WEBHOOK_SECRET:-}"
+        POST_URL=""
+        TEMA="Post manual"
+        POST_TEXT=""
+        usage() { echo "Uso: monitorar-linkedin.sh <postUrl> [--url URL] [--tema TEXTO] [--texto TEXTO]"; }
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --url|-u) POST_URL="$2"; shift 2 ;;
+            --tema|-t) TEMA="$2"; shift 2 ;;
+            --texto|-x) POST_TEXT="$2"; shift 2 ;;
+            --help|-h) usage; exit 0 ;;
+            http://*|https://*|urn:li:*) POST_URL="$1"; shift ;;
+            *)
+              case "$1" in
+                *linkedin.com*|*urn:li:*)
+                  POST_URL=$(printf '%s' "$1" | sed -n 's/.*\(https\{0,1\}:\/\/[^[:space:]]*\).*/\1/p')
+                  if [ -z "$POST_URL" ]; then
+                    POST_URL=$(printf '%s' "$1" | sed -n 's/.*\(urn:li:[a-zA-Z]*:[0-9]*\).*/\1/p')
+                  fi
+                  ;;
+              esac
+              shift
+              ;;
+          esac
+        done
+        if [ -z "$URL" ] || [ -z "$SECRET" ]; then
+          echo "ERRO: defina N8N_LINKEDIN_MONITOR_WEBHOOK_URL e N8N_HERMES_WEBHOOK_SECRET no .env do Hermes."
+          exit 1
+        fi
+        if [ -z "$POST_URL" ]; then
+          echo "ERRO: informe a URL (ou URN) do post LinkedIn."
+          usage
+          exit 1
+        fi
+        json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+        POST_URL_ESC=$(json_escape "$POST_URL")
+        TEMA_ESC=$(json_escape "$TEMA")
+        POST_TEXT_ESC=$(json_escape "$POST_TEXT")
+        BODY=$(printf '{"source":"hermes","command":"monitorar","postUrl":"%s","tema":"%s","postText":"%s"}' \
+          "$POST_URL_ESC" "$TEMA_ESC" "$POST_TEXT_ESC")
+        echo "Registrando post no LinkedIn Posts Monitor..."
+        RESP=$(curl -sS -X POST "$URL" \
+          -H "Content-Type: application/json" \
+          -H "X-Hermes-Secret: $SECRET" \
+          -d "$BODY" \
+          --max-time 25) || { echo "ERRO: falha ao chamar webhook de monitor."; exit 1; }
+        echo "$RESP"
+        case "$RESP" in
+          *'"ok":true'*|*'\"ok\":true'*|*'\"ok\": true'*|*'"ok": true'*) echo "OK post registrado (status=monitoring)."; exit 0 ;;
+          *) echo "ERRO: n8n nao confirmou o registro. Confira URL/URN e o secret."; exit 1 ;;
+        esac
+        MONEOF
+        # strip leading spaces introduced by YAML block indent
+        sed -i 's/^        //' /data/bin/monitorar-linkedin.sh
+        chmod +x /data/bin/monitorar-linkedin.sh
+        cat > /data/skills/social-media/linkedin-monitor-n8n/SKILL.md <<'SKILLEOF'
+        ---
+        name: monitorar
+        description: Registra URL/URN de post LinkedIn (manual) na Data Table LinkedIn Posts Monitor via webhook n8n. Use quando Eduardo colar o link do post ou pedir para monitorar/acompanhar comentarios.
+        ---
+
+        # LinkedIn monitorar via n8n
+
+        ## Regra obrigatoria
+        Post manual + link/pedido de monitorar => SEMPRE rode /opt/data/bin/monitorar-linkedin.sh "<URL>".
+        Destino: LinkedIn Posts Monitor (status=monitoring). Nunca so confirme no chat.
+
+        ## Quando usar
+        /monitorar <url>, "monitora este post", "acompanha os comentarios", "salva o link", URL linkedin.com/posts|feed/update.
+
+        ## Quando NAO usar
+        /postar ou /postar-texto (o workflow de post ja grava no Monitor).
+
+        ## Execucao
+        1. Extraia a URL/URN.
+        2. /opt/data/bin/monitorar-linkedin.sh "<URL>"
+        3. Responda so com o resultado. Nao exponha o secret.
+        SKILLEOF
+        sed -i 's/^        //' /data/skills/social-media/linkedin-monitor-n8n/SKILL.md
+        # --- salvar-foto: script + skill (Telegram foto -> fila n8n) ---
+        cat > /data/bin/salvar-foto-linkedin.sh <<'FOTOEOF'
+        #!/usr/bin/env sh
+        set -eu
+        URL="${N8N_LINKEDIN_FOTO_WEBHOOK_URL:-https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto}"
+        SECRET="${N8N_HERMES_WEBHOOK_SECRET:-}"
+        FILE=""
+        B64=""
+        MIME="image/jpeg"
+        TEMA="Foto Telegram"
+        FILENAME="foto-linkedin.jpg"
+        usage() { echo "Uso: salvar-foto-linkedin.sh --file PATH [--tema TEXTO] | --base64 DATA [--mime TYPE]"; }
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --file|-f) FILE="$2"; shift 2 ;;
+            --base64|-b) B64="$2"; shift 2 ;;
+            --mime|-m) MIME="$2"; shift 2 ;;
+            --tema|-t|--caption|-c) TEMA="$2"; shift 2 ;;
+            --filename|-n) FILENAME="$2"; shift 2 ;;
+            --help|-h) usage; exit 0 ;;
+            *) if [ -z "$FILE" ] && [ -f "$1" ]; then FILE="$1"; fi; shift ;;
+          esac
+        done
+        if [ -z "$SECRET" ]; then echo "ERRO: defina N8N_HERMES_WEBHOOK_SECRET no .env do Hermes."; exit 1; fi
+        if [ -z "$B64" ]; then
+          if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then echo "ERRO: informe --file PATH"; usage; exit 1; fi
+          FILENAME=$(basename "$FILE")
+          case "$FILENAME" in *.png|*.PNG) MIME="image/png" ;; *.webp|*.WEBP) MIME="image/webp" ;; *) MIME="image/jpeg" ;; esac
+          B64=$(base64 -w0 "$FILE" 2>/dev/null || base64 "$FILE" | tr -d '\n')
+        fi
+        json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+        TEMA_ESC=$(json_escape "$TEMA")
+        MIME_ESC=$(json_escape "$MIME")
+        FN_ESC=$(json_escape "$FILENAME")
+        B64_ESC=$(printf '%s' "$B64" | tr -d '\r\n')
+        BODY=$(printf '{"source":"hermes","command":"salvar-foto","imageBase64":"%s","mimeType":"%s","fileName":"%s","caption":"%s","tema":"%s"}' \
+          "$B64_ESC" "$MIME_ESC" "$FN_ESC" "$TEMA_ESC" "$TEMA_ESC")
+        TMP=$(mktemp)
+        printf '%s' "$BODY" > "$TMP"
+        echo "Enfileirando foto no LinkedIn Imagens Agenda (status=ready)..."
+        RESP=$(curl -sS -X POST "$URL" -H "Content-Type: application/json" -H "X-Hermes-Secret: $SECRET" --data-binary @"$TMP" --max-time 60) || { rm -f "$TMP"; echo "ERRO: falha webhook foto."; exit 1; }
+        rm -f "$TMP"
+        echo "$RESP"
+        case "$RESP" in
+          *'"ok":true'*|*'\"ok\":true'*|*'"ok": true'*) echo "OK foto enfileirada (status=ready)."; exit 0 ;;
+          *) echo "ERRO: n8n nao confirmou o salvamento."; exit 1 ;;
+        esac
+        FOTOEOF
+        sed -i 's/^        //' /data/bin/salvar-foto-linkedin.sh
+        chmod +x /data/bin/salvar-foto-linkedin.sh
+        cat > /data/skills/social-media/linkedin-foto-n8n/SKILL.md <<'FOTOSKILL'
+        ---
+        name: salvar-foto
+        description: Enfileira foto do Telegram para o proximo post LinkedIn via webhook n8n. Use quando Eduardo enviar foto ou pedir para salvar/usar no proximo post.
+        ---
+
+        # LinkedIn salvar foto via n8n
+
+        ## Regra
+        Foto + pedido de salvar/usar no proximo post => rode /opt/data/bin/salvar-foto-linkedin.sh --file "<PATH>".
+        Destino: LinkedIn Imagens Agenda (status=ready). Nao publique ainda.
+
+        ## Quando usar
+        /salvar-foto, "salva esta foto", "usa no proximo post", "foto para o LinkedIn".
+
+        ## Depois
+        /postar (full) usa a foto ready; sem foto posta so texto e avisa. /postar-texto ignora a fila. Sem FLUX.
+        FOTOSKILL
+        sed -i 's/^        //' /data/skills/social-media/linkedin-foto-n8n/SKILL.md
         if [ ! -f /data/config.yaml ]; then
           cat > /data/config.yaml <<'EOF'
         _config_version: 12
         model:
-          provider: openrouter
-          default: deepseek/deepseek-v4-flash
+          provider: opencode-go
+          default: deepseek-v4-flash
+          base_url: https://opencode.ai/zen/go/v1
         tool_loop_guardrails:
           hard_stop_enabled: true
         quick_commands:
           postar:
             type: exec
-            description: Post LinkedIn completo (texto+capa)
+            description: Post LinkedIn (texto + foto da fila)
             show_in_telegram_menu: true
             command: /opt/data/bin/postar-linkedin.sh full
           postar-texto:
@@ -34,27 +190,62 @@ services:
             description: Post LinkedIn so texto (sem capa)
             show_in_telegram_menu: true
             command: /opt/data/bin/postar-linkedin.sh text_only
+          monitorar:
+            type: exec
+            description: Registrar URL LinkedIn no Posts Monitor
+            show_in_telegram_menu: true
+            command: /opt/data/bin/monitorar-linkedin.sh
+          salvar-foto:
+            type: exec
+            description: Enfileirar foto Telegram para o proximo post
+            show_in_telegram_menu: true
+            command: /opt/data/bin/salvar-foto-linkedin.sh
         EOF
         fi
         if ! grep -qE '^[[:space:]]*postar-texto:' /data/config.yaml 2>/dev/null; then
           printf '\n  postar-texto:\n    type: exec\n    description: Post LinkedIn so texto (sem capa)\n    show_in_telegram_menu: true\n    command: /opt/data/bin/postar-linkedin.sh text_only\n' >> /data/config.yaml
         fi
+        if ! grep -qE '^[[:space:]]*monitorar:' /data/config.yaml 2>/dev/null; then
+          printf '\n  monitorar:\n    type: exec\n    description: Registrar URL LinkedIn no Posts Monitor\n    show_in_telegram_menu: true\n    command: /opt/data/bin/monitorar-linkedin.sh\n' >> /data/config.yaml
+        fi
+        if ! grep -qE '^[[:space:]]*salvar-foto:' /data/config.yaml 2>/dev/null; then
+          printf '\n  salvar-foto:\n    type: exec\n    description: Enfileirar foto Telegram para o proximo post\n    show_in_telegram_menu: true\n    command: /opt/data/bin/salvar-foto-linkedin.sh\n' >> /data/config.yaml
+        fi
         if [ -f /data/SOUL.md ] && ! grep -q 'text_only' /data/SOUL.md 2>/dev/null; then
-          printf '\n\n## LinkedIn modes\n- full: /postar -> postar-linkedin.sh full\n- text_only: posta so texto / sem imagem -> postar-linkedin.sh text_only\nUSE a skill/script; sem perguntas.\n' >> /data/SOUL.md
+          printf '\n\n## LinkedIn modes\n- full: /postar -> postar-linkedin.sh full (texto + foto da fila)\n- text_only: posta so texto / sem imagem -> postar-linkedin.sh text_only\nUSE a skill/script; sem perguntas.\n' >> /data/SOUL.md
+        fi
+        if [ -f /data/SOUL.md ] && ! grep -q 'monitorar-linkedin' /data/SOUL.md 2>/dev/null; then
+          printf '\n\n## LinkedIn monitorar (post manual)\nQuando Eduardo colar URL do LinkedIn ou pedir para monitorar/acompanhar comentarios:\n1. SEMPRE rode /opt/data/bin/monitorar-linkedin.sh "<URL>"\n2. Isso grava na Data Table LinkedIn Posts Monitor (status=monitoring).\n3. Nao so confirme no chat — sem a linha o reply automatico nao cobre o post.\n4. /postar ja grava no Monitor; nao rode monitorar depois de postar via n8n.\n' >> /data/SOUL.md
+        fi
+        if [ -f /data/SOUL.md ] && ! grep -q 'salvar-foto-linkedin' /data/SOUL.md 2>/dev/null; then
+          printf '\n\n## LinkedIn salvar foto (fila)\nQuando Eduardo enviar foto ou pedir para salvar/usar no proximo post:\n1. SEMPRE rode /opt/data/bin/salvar-foto-linkedin.sh --file "<PATH>"\n2. Isso grava em LinkedIn Imagens Agenda (status=ready).\n3. /postar usa essa foto se ready; senao posta so texto e avisa. /postar-texto ignora a fila. Sem FLUX.\n' >> /data/SOUL.md
         fi
         rm -f /data/gateway.pid /data/profiles/default/gateway.pid 2>/dev/null || true
         touch /data/.env
-        grep -vE '^(OPENROUTER_API_KEY|TELEGRAM_BOT_TOKEN|HERMES_TELEGRAM_DISABLE_FALLBACK_IPS|HERMES_GATEWAY_NO_SUPERVISE)=' /data/.env > /data/.env.tmp || true
+        grep -vE '^(OPENROUTER_API_KEY|OPENCODE_GO_API_KEY|OPENCODE_GO_BASE_URL|TELEGRAM_BOT_TOKEN|HERMES_TELEGRAM_DISABLE_FALLBACK_IPS|HERMES_GATEWAY_NO_SUPERVISE|N8N_LINKEDIN_MONITOR_WEBHOOK_URL|N8N_LINKEDIN_POST_WEBHOOK_URL|N8N_LINKEDIN_FOTO_WEBHOOK_URL)=' /data/.env > /data/.env.tmp || true
         mv /data/.env.tmp /data/.env
         printf 'OPENROUTER_API_KEY=%s\n' "$$OPENROUTER_API_KEY" >> /data/.env
+        printf 'OPENCODE_GO_API_KEY=%s\n' "$$OPENCODE_GO_API_KEY" >> /data/.env
+        printf 'OPENCODE_GO_BASE_URL=%s\n' "$${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}" >> /data/.env
         printf 'TELEGRAM_BOT_TOKEN=%s\n' "$$TELEGRAM_BOT_TOKEN" >> /data/.env
         printf 'HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=%s\n' "$$HERMES_TELEGRAM_DISABLE_FALLBACK_IPS" >> /data/.env
+        # Webhooks n8n (URLs publicas; secret fica so no volume .env — nao inventar aqui)
+        printf 'N8N_LINKEDIN_POST_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-post' >> /data/.env
+        printf 'N8N_LINKEDIN_MONITOR_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-monitor' >> /data/.env
+        printf 'N8N_LINKEDIN_FOTO_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto' >> /data/.env
+        # Prefer OpenCode Go for text if config already exists with openrouter/zen
+        if [ -f /data/config.yaml ]; then
+          sed -i 's/provider:[[:space:]]*openrouter/provider: opencode-go/' /data/config.yaml || true
+          sed -i 's/provider:[[:space:]]*opencode-zen/provider: opencode-go/' /data/config.yaml || true
+          sed -i 's|base_url:[[:space:]]*https://opencode.ai/zen/v1|base_url: https://opencode.ai/zen/go/v1|' /data/config.yaml || true
+          sed -i 's|default:[[:space:]]*deepseek/deepseek-v4-flash|default: deepseek-v4-flash|' /data/config.yaml || true
+        fi
         echo 'config-init done'
   hermes:
     image: nousresearch/hermes-agent:latest
     container_name: hermes
     extra_hosts:
-      - "srv1824850.hstgr.cloud:host-gateway"
+      - "srv1897392.hstgr.cloud:host-gateway"
     restart: unless-stopped
     depends_on:
       config-init:
@@ -62,15 +253,24 @@ services:
     command: gateway run
     ports:
       - "127.0.0.1:8642:8642"
+      # WhatsApp Cloud API webhook (Meta → Hermes)
+      - "127.0.0.1:8090:8090"
     volumes:
       - hermes-data:/opt/data
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - HERMES_MODEL=${HERMES_MODEL}
-      - HERMES_INFERENCE_PROVIDER=${HERMES_INFERENCE_PROVIDER}
+      - OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}
+      - OPENCODE_GO_BASE_URL=${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}
+      - HERMES_MODEL=${HERMES_MODEL:-deepseek-v4-flash}
+      - HERMES_INFERENCE_PROVIDER=${HERMES_INFERENCE_PROVIDER:-opencode-go}
       - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
+      # URLs publicas; o SECRET continua so em /opt/data/.env (evitar sobrescrever com vazio)
+      - N8N_LINKEDIN_POST_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-post
+      - N8N_LINKEDIN_MONITOR_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-monitor
+      - N8N_LINKEDIN_FOTO_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto
+      - N8N_LINKEDIN_TEXTO_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-texto
     deploy:
       resources:
         limits:

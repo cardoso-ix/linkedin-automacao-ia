@@ -1,0 +1,130 @@
+services:
+  config-init:
+    image: busybox:1.36
+    volumes:
+      - hermes-data:/data
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}
+      - OPENCODE_GO_BASE_URL=${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /data /data/bin /data/skills/social-media/linkedin-foto-n8n
+        touch /data/.env
+        grep -vE '^(OPENROUTER_API_KEY|OPENCODE_GO_API_KEY|OPENCODE_GO_BASE_URL|TELEGRAM_BOT_TOKEN|HERMES_TELEGRAM_DISABLE_FALLBACK_IPS|HERMES_GATEWAY_NO_SUPERVISE|N8N_LINKEDIN_FOTO_WEBHOOK_URL|N8N_LINKEDIN_POST_WEBHOOK_URL|N8N_LINKEDIN_MONITOR_WEBHOOK_URL)=' /data/.env > /data/.env.tmp || true
+        mv /data/.env.tmp /data/.env
+        printf 'OPENROUTER_API_KEY=%s\n' "$$OPENROUTER_API_KEY" >> /data/.env
+        printf 'OPENCODE_GO_API_KEY=%s\n' "$$OPENCODE_GO_API_KEY" >> /data/.env
+        printf 'OPENCODE_GO_BASE_URL=%s\n' "$${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}" >> /data/.env
+        printf 'TELEGRAM_BOT_TOKEN=%s\n' "$$TELEGRAM_BOT_TOKEN" >> /data/.env
+        printf 'HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=%s\n' "$$HERMES_TELEGRAM_DISABLE_FALLBACK_IPS" >> /data/.env
+        printf 'N8N_LINKEDIN_POST_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-post' >> /data/.env
+        printf 'N8N_LINKEDIN_MONITOR_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-monitor' >> /data/.env
+        printf 'N8N_LINKEDIN_FOTO_WEBHOOK_URL=%s\n' 'https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto' >> /data/.env
+        cat > /data/bin/salvar-foto-linkedin.sh <<'FOTOEOF'
+        #!/usr/bin/env sh
+        set -eu
+        URL="${N8N_LINKEDIN_FOTO_WEBHOOK_URL:-https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto}"
+        SECRET="${N8N_HERMES_WEBHOOK_SECRET:-}"
+        FILE=""
+        B64=""
+        MIME="image/jpeg"
+        TEMA="Foto Telegram"
+        FILENAME="foto-linkedin.jpg"
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --file|-f) FILE="$2"; shift 2 ;;
+            --base64|-b) B64="$2"; shift 2 ;;
+            --mime|-m) MIME="$2"; shift 2 ;;
+            --tema|-t|--caption|-c) TEMA="$2"; shift 2 ;;
+            --filename|-n) FILENAME="$2"; shift 2 ;;
+            *) if [ -z "$FILE" ] && [ -f "$1" ]; then FILE="$1"; fi; shift ;;
+          esac
+        done
+        if [ -z "$SECRET" ]; then echo "ERRO: defina N8N_HERMES_WEBHOOK_SECRET"; exit 1; fi
+        if [ -z "$B64" ]; then
+          if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then echo "ERRO: --file PATH"; exit 1; fi
+          FILENAME=$(basename "$FILE")
+          case "$FILENAME" in *.png|*.PNG) MIME="image/png" ;; *.webp|*.WEBP) MIME="image/webp" ;; *) MIME="image/jpeg" ;; esac
+          B64=$(base64 -w0 "$FILE" 2>/dev/null || base64 "$FILE" | tr -d '\n')
+        fi
+        json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+        TEMA_ESC=$(json_escape "$TEMA")
+        MIME_ESC=$(json_escape "$MIME")
+        FN_ESC=$(json_escape "$FILENAME")
+        B64_ESC=$(printf '%s' "$B64" | tr -d '\r\n')
+        BODY=$(printf '{"source":"hermes","command":"salvar-foto","imageBase64":"%s","mimeType":"%s","fileName":"%s","caption":"%s","tema":"%s"}' \
+          "$B64_ESC" "$MIME_ESC" "$FN_ESC" "$TEMA_ESC" "$TEMA_ESC")
+        TMP=$(mktemp)
+        printf '%s' "$BODY" > "$TMP"
+        echo "Enfileirando foto..."
+        RESP=$(curl -sS -X POST "$URL" -H "Content-Type: application/json" -H "X-Hermes-Secret: $SECRET" --data-binary @"$TMP" --max-time 60) || { rm -f "$TMP"; echo "ERRO webhook"; exit 1; }
+        rm -f "$TMP"
+        echo "$RESP"
+        case "$RESP" in
+          *'"ok":true'*|*'"ok": true'*) echo "OK foto enfileirada."; exit 0 ;;
+          *) echo "ERRO: n8n nao confirmou."; exit 1 ;;
+        esac
+        FOTOEOF
+        sed -i 's/^        //' /data/bin/salvar-foto-linkedin.sh
+        chmod +x /data/bin/salvar-foto-linkedin.sh
+        cat > /data/skills/social-media/linkedin-foto-n8n/SKILL.md <<'SKILLEOF'
+        ---
+        name: salvar-foto
+        description: Enfileira foto do Telegram para o proximo post LinkedIn via webhook n8n.
+        ---
+        Foto + pedido salvar/usar no proximo post => /opt/data/bin/salvar-foto-linkedin.sh --file "<PATH>".
+        /postar usa foto ready; sem foto gera FLUX. /postar-texto ignora a fila.
+        SKILLEOF
+        sed -i 's/^        //' /data/skills/social-media/linkedin-foto-n8n/SKILL.md
+        if [ -f /data/config.yaml ] && ! grep -qE '^[[:space:]]*salvar-foto:' /data/config.yaml 2>/dev/null; then
+          printf '\n  salvar-foto:\n    type: exec\n    description: Enfileirar foto Telegram para o proximo post\n    show_in_telegram_menu: true\n    command: /opt/data/bin/salvar-foto-linkedin.sh\n' >> /data/config.yaml
+        fi
+        if [ -f /data/SOUL.md ] && ! grep -q 'salvar-foto-linkedin' /data/SOUL.md 2>/dev/null; then
+          printf '\n\n## LinkedIn salvar foto\nQuando Eduardo enviar foto: rode /opt/data/bin/salvar-foto-linkedin.sh --file "<PATH>". /postar usa ready; senao FLUX.\n' >> /data/SOUL.md
+        fi
+        if [ -f /data/config.yaml ]; then
+          sed -i 's/provider:[[:space:]]*openrouter/provider: opencode-go/' /data/config.yaml || true
+          sed -i 's/provider:[[:space:]]*opencode-zen/provider: opencode-go/' /data/config.yaml || true
+          sed -i 's|default:[[:space:]]*deepseek/deepseek-v4-flash|default: deepseek-v4-flash|' /data/config.yaml || true
+        fi
+        rm -f /data/gateway.pid /data/profiles/default/gateway.pid 2>/dev/null || true
+        echo 'config-init done'
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    extra_hosts:
+      - "srv1897392.hstgr.cloud:host-gateway"
+    restart: unless-stopped
+    depends_on:
+      config-init:
+        condition: service_completed_successfully
+    command: gateway run
+    ports:
+      - "127.0.0.1:8642:8642"
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - hermes-data:/opt/data
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENCODE_GO_API_KEY=${OPENCODE_GO_API_KEY}
+      - OPENCODE_GO_BASE_URL=${OPENCODE_GO_BASE_URL:-https://opencode.ai/zen/go/v1}
+      - HERMES_MODEL=${HERMES_MODEL:-deepseek-v4-flash}
+      - HERMES_INFERENCE_PROVIDER=${HERMES_INFERENCE_PROVIDER:-opencode-go}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - HERMES_TELEGRAM_DISABLE_FALLBACK_IPS=${HERMES_TELEGRAM_DISABLE_FALLBACK_IPS}
+      - N8N_LINKEDIN_POST_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-post
+      - N8N_LINKEDIN_MONITOR_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-monitor
+      - N8N_LINKEDIN_FOTO_WEBHOOK_URL=https://srv1897392.hstgr.cloud/webhook/hermes-linkedin-foto
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+          cpus: "1.0"
+volumes:
+  hermes-data:

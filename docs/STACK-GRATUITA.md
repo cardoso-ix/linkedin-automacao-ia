@@ -1,7 +1,7 @@
 # Stack 100% gratuita — Post diário LinkedIn (**opcional / legado**)
 
 Timezone: **America/Sao_Paulo**  
-Workflow: [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) (`ysHFWIV0tGWJbhjo`)
+Workflow: [LinkedIn Post Diario Texto](https://srv1897392.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) (`ysHFWIV0tGWJbhjo`)
 
 > **Status (2026-08-01):** isto **não** é o default.  
 > Em produção o post diário usa **OpenRouter DeepSeek-V4-Flash + FLUX.2 Pro**.  

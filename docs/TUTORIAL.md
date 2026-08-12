@@ -12,20 +12,20 @@
 2. `/postar` → texto + capa  
    `/postar-texto` → só texto
 3. Aguarde a notificação do n8n no Telegram de alerta
-4. Confira Executions em [Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) (origem webhook)
+4. Confira Executions em [Post Diario Texto](https://srv1897392.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo) (origem webhook)
 
 Detalhes: [HERMES-ASSISTENTE.md](HERMES-ASSISTENTE.md)
 
 ## Conferir o workflow de post no n8n
 
-1. Abra [LinkedIn Post Diario Texto](https://srv1824850.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo)
+1. Abra [LinkedIn Post Diario Texto](https://srv1897392.hstgr.cloud/workflow/ysHFWIV0tGWJbhjo)
 2. Credenciais **OpenRouter** (texto + imagem) + **LinkedIn**
 3. Nó **Daily 8h Sao Paulo** deve estar **desabilitado**
 4. Workflow **Active** (após Publish do draft)
 
 ## Respostas a comentários (sem Gmail)
 
-1. Abra [LinkedIn Resposta Comentarios Post](https://srv1824850.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)
+1. Abra [LinkedIn Resposta Comentarios Post](https://srv1897392.hstgr.cloud/workflow/q28d2xJlAgvMpZ9Z)
 2. **Generate Reply Text** → `deepseek/deepseek-v4-flash`
 3. Credencial **OpenRouter account** + LinkedIn
 4. Deixe **Active** (após Publish)

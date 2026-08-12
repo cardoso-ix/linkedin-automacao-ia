@@ -2,17 +2,18 @@
 
 ## Antes de ativar
 
-- [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — OpenRouter (texto + capa) + LinkedIn
-- [ ] Nó **Daily 8h Sao Paulo** **desabilitado** (post só via Hermes)
+- [ ] Workflow **LinkedIn Post Diario Texto** (`ysHFWIV0tGWJbhjo`) — Active
+- [ ] Schedule 08:00 (São Paulo) **habilitado** — post diário automático
 - [ ] Webhook Hermes + secret alinhado com `.env` do container Hermes
-- [ ] Hermes: `/postar` e `/postar-texto` + skill `linkedin-post-n8n`
-- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — DeepSeek + Sheets/HTML + LinkedIn
-- [ ] Credencial **OpenRouter account** (texto, FLUX, reply)
-- [ ] Modelos: `deepseek/deepseek-v4-flash` + `black-forest-labs/flux.2-pro`
-- [ ] Resposta via Gmail permanece **arquivado**
-- [ ] Timezone `America/Sao_Paulo`
-- [ ] Data Table **LinkedIn Posts Diario** ok (anti-dupe; `force=1` bypass)
-- [ ] Draft publicado (**Publish**) após mudanças no canvas
+- [ ] Hermes: `/postar`, `/postar-texto`, `/salvar-texto`, `/salvar-foto`, `/monitorar`
+- [ ] Workflow **LinkedIn Salvar Texto Hermes** (`aPTD3w3uZCuz11tP`) — Active
+- [ ] Workflow **LinkedIn Salvar Foto Hermes** (`HIlMXIjvjjxwcGlo`) — Active
+- [ ] Workflow **LinkedIn Registrar Post Monitor** (`1tqbFp0ft3GsxTgK`) — Active
+- [ ] Workflow **LinkedIn Resposta Comentarios Post** (`q28d2xJlAgvMpZ9Z`) — Active (poll ~2 min)
+- [ ] Credencial **LinkedIn account** (OAuth) — token válido
+- [ ] Credencial **OpenCode Go** — modelo `deepseek-v4-flash` (reply de comentários)
+- [ ] Timezone `America/Sao_Paulo` configurado no `.env` do n8n
+- [ ] Data Tables criadas: Textos Agenda, Imagens Agenda, Posts Monitor, Posts Diario
 
 ## Regras do post
 
@@ -22,19 +23,21 @@
 - [ ] Sem travessão / emojis / jargão vazio
 - [ ] Entre 3 e 5 hashtags temáticas
 - [ ] Fechar com reflexão ou convite leve ao comentário
-- [ ] Capa **sem texto, sem letras e sem números** (mode=full; 8 estilos round-robin)
+- [ ] Imagem: foto real (Telegram), não gerada por IA
 
 ## Respostas a comentários
 
-- [ ] Generate Reply Text = DeepSeek-V4-Flash (OpenRouter)
+- [ ] Modelo: DeepSeek-V4-Flash via OpenCode Go
 - [ ] Tom da skill `linkedin-resposta-comentario`
-- [ ] Wait 20s entre replies
-- [ ] Confirmar reply no LinkedIn + mark done no Sheets
+- [ ] Wait entre replies para não flood
+- [ ] Posts monitorados < 48h (após isso, saem do poll)
 
 ## Validação rápida
 
-1. Telegram `/postar` → texto + capa (ou fallback só texto)
-2. Telegram `/postar-texto` → só texto
-3. Conferir Executions: origem **webhook**
-4. Aguardar poll ~2 min no fluxo de comments (ou Execute once)
-5. Mudanças no canvas ficam em **draft** até Publish
+1. `/salvar-texto` → fila com `status=ready`
+2. `/salvar-foto` → fila com `status=ready`
+3. `/postar` → texto + foto (ou só texto) + alerta Telegram + auto-monitor
+4. `/postar-texto` → só texto
+5. `/monitorar <url>` → linha no Posts Monitor
+6. Conferir Executions: origem **webhook** ou **schedule**
+7. Aguardar poll ~2 min para reply automático em posts monitorados
