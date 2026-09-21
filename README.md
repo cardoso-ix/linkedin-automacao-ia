@@ -1,4 +1,4 @@
-# Automação LinkedIn — Hermes v2 + Playwright + n8n
+# Automação LinkedIn — Telegram + n8n + Playwright Bridge
 
 Sistema avançado de automação humanizada para o LinkedIn, integrando **Telegram Bot**, **Playwright em modo persistente (Docker + Xvfb)** e **n8n** na nuvem (VPS).
 
