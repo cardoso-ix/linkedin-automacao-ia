@@ -15,6 +15,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 * **Gerador de Prompts para Meta AI:** prompts calibrados para imagens panorâmicas 16:9 em estética dark mode com diagramas de processos e infográficos técnicos **100% em Português do Brasil (PT-BR)**.
 * **Monitor de Comentários Human-in-the-Loop:** n8n a cada 30 minutos + DeepSeek v4.1 sugerindo réplicas técnicas inteligentes para novos comentários nos seus posts com aprovação no Telegram.
 * **Monitor de Visitantes do Perfil (LinkedIn Premium):** n8n a cada 4 horas escaneando visualizações de perfil, classificando recrutadores e tomadores de decisão, e sugerindo abordagens elegantes com link direto.
+* **Governança & Observabilidade com Coolify v4:** Gestão centralizada dos containers Docker na VPS HostGator, com métricas de CPU/RAM em tempo real, checagens nativas de saúde (`healthcheck`), proxy reverso Traefik v3.7 e isolamento em múltiplos ambientes de projetos.
 
 ---
 
@@ -37,12 +38,20 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 |  - Endpoints REST             |             |  - Deduplicação de alertas    |
 |  - Telegram Bot Daemon        |             |                               |
 +-------------------------------+             +-------------------------------+
-              |
-              v
-+-------------------------------+
-|       LinkedIn Web App        |
-|  (Feed, Posts, Analytics)     |
-+-------------------------------+
+              |                                             |
+              +----------------------+----------------------+
+                                     |
+                                     v
+                      +-----------------------------+
+                      |     Coolify v4 Dashboard    |
+                      |  (Docker Engine & Traefik)  |
+                      +-----------------------------+
+                                     |
+                                     v
+                      +-----------------------------+
+                      |       LinkedIn Web App      |
+                      |  (Feed, Posts, Analytics)   |
+                      +-----------------------------+
 ```
 
 ---
@@ -110,6 +119,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
    ```
 
 4. Acesse o n8n no navegador em `http://<IP_DA_VPS>:5678` e importe os workflows da pasta `workflows/`.
+5. Gerencie, acompanhe métricas de CPU/RAM e visualize logs pelo Coolify v4 em `http://<IP_DA_VPS>:8000`.
 
 ---
 

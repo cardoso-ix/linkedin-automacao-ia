@@ -10,18 +10,30 @@ services:
     environment:
       - N8N_PORT=5678
       - N8N_HOST=0.0.0.0
-      - WEBHOOK_URL=http://SEU_IP_VPS:5678/
+      - WEBHOOK_URL=http://108.174.145.77:5678/
       - N8N_PROTOCOL=http
       - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - TZ=America/Sao_Paulo
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_RUNNERS_ENABLED=true
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./shared:/data/shared
     networks:
       - automation-net
+    labels:
+      - coolify.managed=true
+      - coolify.serviceId=1
+      - coolify.service.subType=application
+      - coolify.service.subId=1
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5678/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   linkedin-bridge:
     build:
@@ -30,7 +42,7 @@ services:
     container_name: linkedin-bridge
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8088:8000"
     env_file:
       - .env
     environment:
@@ -41,6 +53,17 @@ services:
       - ./shared:/app/shared
     networks:
       - automation-net
+    labels:
+      - coolify.managed=true
+      - coolify.serviceId=1
+      - coolify.service.subType=application
+      - coolify.service.subId=2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 networks:
   automation-net:

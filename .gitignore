@@ -11,6 +11,8 @@ venv/
 *.pem
 *.key
 *credentials*
+*credenciais*
+*CREDENCIAS*
 *secret*
 session/
 shared/
@@ -33,3 +35,25 @@ Thumbs.db
 .idea/
 .vscode/
 .cursor/
+
+# Local Scratch, Diagnostic & Test Scripts
+scripts/test_*.py
+scripts/run_live_test.py
+scripts/snap_proof.py
+scripts/verify_screenshot.py
+scripts/inspect_*.py
+scripts/scrape_*.py
+scripts/diagnostic_check.py
+infra/test_*.py
+infra/*_test.py
+infra/run_*.py
+infra/inspect_*.py
+infra/snap_*.py
+infra/take_*.py
+infra/debug_*.py
+infra/find_*.py
+infra/get_*.py
+infra/deploy_*.py
+infra/setup_*.py
+test_post_prompt.py
+config/

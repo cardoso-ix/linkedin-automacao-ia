@@ -2,10 +2,10 @@ import sys
 import paramiko
 import os
 
-HOST = os.getenv("VPS_HOST", "SEU_IP_VPS")
-PORT = int(os.getenv("VPS_PORT", "22"))
+HOST = os.getenv("VPS_HOST", "108.174.145.77")
+PORT = int(os.getenv("VPS_PORT", "22022"))
 USER = os.getenv("VPS_USER", "root")
-PASSWORD = os.getenv("VPS_PASSWORD", "SUA_SENHA_VPS")
+PASSWORD = os.getenv("VPS_PASSWORD", "")
 
 try:
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')

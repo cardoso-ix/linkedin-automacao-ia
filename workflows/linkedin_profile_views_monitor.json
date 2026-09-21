@@ -33,7 +33,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const fs = require('fs');\nconst SEEN_FILE = '/data/shared/seen_viewers.json';\nlet seen = [];\ntry {\n  if (fs.existsSync(SEEN_FILE)) {\n    seen = JSON.parse(fs.readFileSync(SEEN_FILE, 'utf8'));\n  }\n} catch (e) {}\n\nconst viewers = $input.first().json.viewers || [];\nconst newViewers = [];\n\nfor (const v of viewers) {\n  if (!seen.includes(v.profileUrl)) {\n    seen.push(v.profileUrl);\n    newViewers.push(v);\n  }\n}\n\ntry {\n  fs.writeFileSync(SEEN_FILE, JSON.stringify(seen.slice(-500), null, 2), 'utf8');\n} catch (e) {}\n\nif (newViewers.length === 0) {\n  return [];\n}\n\nreturn newViewers.map(v => ({ json: v }));"
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nstaticData.seen = staticData.seen || [];\n\nconst viewers = $input.first().json.viewers || [];\nconst newViewers = [];\n\nfor (const v of viewers) {\n  if (!staticData.seen.includes(v.profileUrl)) {\n    staticData.seen.push(v.profileUrl);\n    newViewers.push(v);\n  }\n}\n\nif (staticData.seen.length > 500) {\n  staticData.seen = staticData.seen.slice(-500);\n}\n\nif (newViewers.length === 0) {\n  return [];\n}\n\nreturn newViewers.map(v => ({ json: v }));"
       },
       "id": "filter-new-views",
       "name": "Filtrar Novos Visitantes",
@@ -67,11 +67,11 @@
         "jsonBody": "={\n  \"model\": \"deepseek-v4.1-flash\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Voce e o proprio Eduardo Cardoso no LinkedIn (Especialista em Automacao e IA Agentica). Crie uma mensagem curta de aproximacao (2 a 3 frases no maximo) para enviar a pessoa que visitou seu perfil. Regras: 1) Tom de colega profissional, maduro e amigavel. 2) Proibido emojis corporativos (sem 🚀, sem 🔥, sem 💡). 3) Proibido ser vendedor insistente. Apenas agradeca a visita, mencione o cargo ou area dela e coloque-se a disposicao para trocar ideia tecnica sobre automacao com n8n ou IA em producao.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Nome do visitante: \" + $json.name + \", Cargo/Headline: \" + $json.headline\n    }\n  ],\n  \"temperature\": 0.7\n}",
         "options": {}
       },
-      "id": "http-deepseek-approach",
-      "name": "Gerar Abordagem DeepSeek v4.1",
+      "id": "deepseek-generate-outreach",
+      "name": "DeepSeek Sugere Abordagem",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 300]
+      "position": [920, 300]
     },
     {
       "parameters": {
@@ -79,7 +79,7 @@
         "url": "https://api.telegram.org/botSEU_TELEGRAM_TOKEN/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"chat_id\": \"6280219693\",\n  \"text\": \"👀 *Novo Visitante no seu Perfil (LinkedIn Premium)!*\\n\\n👤 *\" + $('Filtrar Novos Visitantes').item.json.name + \"*\" + ($('Filtrar Novos Visitantes').item.json.isRecruiter ? \" 🎯 *[Recrutador/RH]*\" : ($('Filtrar Novos Visitantes').item.json.isDecisionMaker ? \" 💼 *[Tomador de Decisão]*\" : \"\")) + \"\\n📌 \" + $('Filtrar Novos Visitantes').item.json.headline + \"\\n🕒 \" + ($('Filtrar Novos Visitantes').item.json.timeAgo || \"Recentemente\") + \"\\n🔗 [Ver Perfil no LinkedIn](\" + $('Filtrar Novos Visitantes').item.json.profileUrl + \")\\n\\n💬 *Sugestão de Abordagem (DeepSeek v4.1):*\\n_\" + $json.choices[0].message.content.trim() + \"_\\n\\n_Dica: Toque na mensagem acima para copiar e enviar por DM ou InMail!_\",\n  \"parse_mode\": \"Markdown\"\n}",
+        "jsonBody": "={\n  \"chat_id\": \"SEU_CHAT_ID\",\n  \"text\": \"👀 *Novo Visitante no seu Perfil (LinkedIn Premium)!*\\n\\n👤 *\" + $('Filtrar Novos Visitantes').item.json.name + \"*\" + ($('Filtrar Novos Visitantes').item.json.isRecruiter ? \" 🎯 *[Recrutador/RH]*\" : ($('Filtrar Novos Visitantes').item.json.isDecisionMaker ? \" 💼 *[Tomador de Decisão]*\" : \"\")) + \"\\n📌 \" + $('Filtrar Novos Visitantes').item.json.headline + \"\\n🕒 \" + ($('Filtrar Novos Visitantes').item.json.timeAgo || \"Recentemente\") + \"\\n🔗 [Ver Perfil no LinkedIn](\" + $('Filtrar Novos Visitantes').item.json.profileUrl + \")\\n\\n💬 *Sugestão de Abordagem (DeepSeek v4.1):*\\n_\" + $json.choices[0].message.content.trim() + \"_\\n\\n_Dica: Toque na mensagem acima para copiar e enviar por DM ou InMail!_\",\n  \"parse_mode\": \"Markdown\"\n}",
         "options": {}
       },
       "id": "telegram-notify-view",
