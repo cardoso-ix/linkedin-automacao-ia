@@ -1,0 +1,160 @@
+{
+  "id": "W1XyZ2aB3cD4eF5g",
+  "name": "LinkedIn Comments Monitor (Human-in-the-Loop)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-1",
+      "name": "A cada 30 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://linkedin-bridge:8000/comments/recent",
+        "options": {}
+      },
+      "id": "http-fetch-comments",
+      "name": "Buscar Comentarios LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-comments",
+              "leftValue": "={{ $json.comments ? $json.comments.length : 0 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-comments",
+      "name": "Tem novos comentarios?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://opencode.ai/zen/go/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer SUA_OPENCODE_API_KEY"
+            },
+            {
+              "name": "x-opencode-session",
+              "value": "=session_n8n_{{ $now.toMillis() }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-v4.1-flash\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Voce e o proprio Eduardo no LinkedIn. Escreva uma resposta curta, inteligente e conversacional ao comentario do seguidor. Regras estritas: 1) Proibido qualquer saudacao generica ou vazia (como 'Com certeza!', 'Excelente ponto!', 'Concordo totalmente!'). 2) Proibido qualquer emoji corporativo (como 🚀, 🔥, 💡, 👏). 3) Proibido usar travessoes (—) ou listas numeradas. 4) Responda em 1 a 3 frases, direto ao ponto, tom humano, profissional e autentico.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Comentario de {{ $json.comments[0].author }}: '{{ $json.comments[0].text }}'\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "id": "http-deepseek-reply",
+      "name": "Gerar Resposta DeepSeek v4.1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/botSEU_TELEGRAM_TOKEN/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"6280219693\",\n  \"text\": \"💬 *Novo comentário no seu post do LinkedIn!*\\n\\n👤 *Autor:* \" + $('http-fetch-comments').item.json.comments[0].author + \"\\n📝 *Comentário:* \\\"\" + $('http-fetch-comments').item.json.comments[0].text + \"\\\"\\n\\n🤖 *Sugestão de Resposta (DeepSeek v4.1):*\\n_\" + $json.choices[0].message.content.trim() + \"_\\n\\nClique abaixo para aprovar:\",\n  \"parse_mode\": \"Markdown\",\n  \"reply_markup\": {\n    \"inline_keyboard\": [\n      [\n        {\"text\": \"✅ Curtir e Responder\", \"callback_data\": \"approve_reply:\" + $('http-fetch-comments').item.json.comments[0].id},\n        {\"text\": \"❌ Ignorar\", \"callback_data\": \"reject_reply:\" + $('http-fetch-comments').item.json.comments[0].id}\n      ]\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "telegram-notify",
+      "name": "Notificar Telegram com Botoes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 220]
+    }
+  ],
+  "connections": {
+    "A cada 30 minutos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comentarios LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comentarios LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Tem novos comentarios?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem novos comentarios?": {
+      "main": [
+        [
+          {
+            "node": "Gerar Resposta DeepSeek v4.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar Resposta DeepSeek v4.1": {
+      "main": [
+        [
+          {
+            "node": "Notificar Telegram com Botoes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,135 +1,57 @@
-# Fluxo — arquitetura ativa (Hermes + n8n)
+# Fluxo Operacional da Automação LinkedIn (v2 — Playwright + Telegram + n8n)
 
-Timezone: **America/Sao_Paulo**
+## Visão Geral da Arquitetura
 
-## Modelo operacional
-
-| Camada | Papel |
-|--------|--------|
-| **Hermes** (Telegram) | Assistente: você comanda; ele enfileira texto/foto e dispara o post |
-| **n8n** | Braço operacional: publica no LinkedIn, responde comentários automaticamente |
-
-**Post sob comando (Hermes no Telegram).** Schedule 08:00 **OFF**.
-
-## Workflows ativos (n8n)
-
-| Workflow | ID | Disparo |
-|----------|-----|---------|
-| LinkedIn Post Diario Texto | `ysHFWIV0tGWJbhjo` | Webhook Hermes (schedule OFF) |
-| LinkedIn Salvar Texto Hermes | `aPTD3w3uZCuz11tP` | Webhook (texto da fila) |
-| LinkedIn Salvar Foto Hermes | `HIlMXIjvjjxwcGlo` | Webhook (foto da fila) |
-| LinkedIn Registrar Post Monitor | `1tqbFp0ft3GsxTgK` | Webhook (monitorar post manual) |
-| LinkedIn Resposta Comentarios Post | `q28d2xJlAgvMpZ9Z` | Schedule ~2 min (automático) |
-
-## 1) Post LinkedIn (schedule + comando)
-
-**Workflow:** LinkedIn Post Diario Texto · ID `ysHFWIV0tGWJbhjo`
-
-**Disparos:** Hermes → webhook (schedule 08:00 OFF).
+O sistema conecta 3 camadas principais em uma infraestrutura em container na nuvem (VPS):
+1. **Bridge LinkedIn (`linkedin-bridge`):** Playwright rodando em Xvfb com Chromium persistente e API FastAPI.
+2. **Telegram Bot Daemon:** Interface conversacional com Eduardo (`@funcionario_vip_bot`) operando em tempo real.
+3. **Orquestrador n8n (`n8n-server`):** Automações agendadas de comentários e monitoramento analítico de visitantes Premium.
 
 ```
-Telegram /postar (via Hermes)
-  → Lê texto ready em LinkedIn Textos Agenda
-  → Se não houver texto → aborta + alerta Telegram
-  → Anti-dupe (bypass se force=1)
-  → IF Text Only Mode
-       text_only / sem_imagem → Post Text Only
-       full → Lê foto ready em LinkedIn Imagens Agenda
-              → foto encontrada → Post With Image
-              → sem foto → Post Text Only (fallback)
-  → Marca texto/foto como "used"
-  → Registra no LinkedIn Posts Monitor (auto-monitor)
-  → Notifica Telegram (sucesso / erro)
++-------------------------------------------------------------------------+
+|                              TELEGRAM                                   |
+|   /post <tema>  -->  Dual Draft (Story vs Arq)  -->  Meta AI Prompt     |
+|   /visitantes   -->  Relatório Instantâneo de Quem Viu seu Perfil       |
+|   /status       -->  Diagnóstico de Saúde da Sessão e APIs              |
++------------------------------------+------------------------------------+
+                                     |
+                                     v
++------------------------------------+------------------------------------+
+|                    LINKEDIN BRIDGE (FastAPI + Playwright)               |
+|   - POST /publish/post          --> Publica post com/sem imagem         |
+|   - GET  /profile/views         --> Extrai e classifica visitantes      |
+|   - GET  /comments/recent       --> Monitora comentários recentes       |
+|   - POST /comments/reply        --> Responde comentários aprovados      |
++------------------------------------+------------------------------------+
+                                     ^
+                                     |
++------------------------------------+------------------------------------+
+|                                  N8N                                    |
+|   - Workflow 1 (30 min): Monitor de comentários + DeepSeek + Aprovação |
+|   - Workflow 2 (4 h):    Monitor de visitantes Premium + Abordagens     |
++-------------------------------------------------------------------------+
 ```
 
-- **Texto:** fila `ready` em LinkedIn Textos Agenda (texto validado pelo usuário, sem LLM)
-- **Imagem:** foto própria criada pelo usuário, enviada via Telegram
-- **Reply model:** DeepSeek-V4-Flash via API LinkedIn
+## Fluxos Detalhados
 
-## 2) Salvar texto (Hermes → fila)
+### 1. Criação e Publicação Humanizada de Posts (`/post <tema>`)
+1. Eduardo envia `/post <tema ou ideia>` no Telegram.
+2. O bot consulta o DeepSeek v4.1 usando as regras estritas anti-IA de `CONTEXT.md`.
+3. Duas versões são entregues simultaneamente:
+   - **Variação 1:** Bastidores & Storytelling Prático.
+   - **Variação 2:** Arquitetura & Posicionamento de Engenharia.
+4. Ao selecionar uma versão, o bot exibe o prompt calibrado para gerar a imagem no Meta AI (100% PT-BR, 16:9, Dark Mode).
+5. Eduardo pode aprovar direto com `[Publicar Agora]` ou enviar a foto gerada antes de confirmar.
+6. O worker do Playwright publica no LinkedIn e retorna a confirmação no chat.
 
-**Workflow:** LinkedIn Salvar Texto Hermes · ID `aPTD3w3uZCuz11tP`
+### 2. Monitor de Comentários Human-in-the-Loop (n8n a cada 30 min)
+1. O n8n consulta `GET /comments/recent` na bridge.
+2. Se houver novo comentário de seguidor, o DeepSeek v4.1 gera uma réplica inteligente de colega para colega.
+3. Alerta enviado no Telegram com botões: `[✅ Curtir e Responder]` e `[❌ Ignorar]`.
+4. Ao clicar no botão, a resposta é publicada diretamente na thread do LinkedIn.
 
-```
-Telegram → Hermes → POST /webhook/hermes-linkedin-texto
-  → Valida secret + texto (50–3000 chars)
-  → Supersede ready anterior (source=hermes)
-  → Insert LinkedIn Textos Agenda (status=ready)
-  → Responde { ok: true, charCount }
-```
-
-## 3) Salvar foto (Hermes → fila)
-
-**Workflow:** LinkedIn Salvar Foto Hermes · ID `HIlMXIjvjjxwcGlo`
-
-```
-Telegram → Hermes → POST /webhook/hermes-linkedin-foto
-  → Valida secret + base64
-  → Grava imagem no disco n8n
-  → Insert LinkedIn Imagens Agenda (status=ready)
-  → Responde { ok: true, filePath }
-```
-
-## 4) Registrar post manual para monitorar
-
-**Workflow:** LinkedIn Registrar Post Monitor · ID `1tqbFp0ft3GsxTgK`
-
-```
-Telegram → Hermes → POST /webhook/hermes-linkedin-monitor
-  → Parse URL/URN do LinkedIn
-  → Upsert LinkedIn Posts Monitor (status=monitoring)
-  → Responde { ok: true, postUrl }
-```
-
-## 5) Resposta a comentários (automático)
-
-**Workflow:** LinkedIn Resposta Comentarios Post · ID `q28d2xJlAgvMpZ9Z`
-
-```
-Every 2 min (schedule)
-  → Lê LinkedIn Posts Monitor (frescos < 48h)
-  → Busca comentários via API LinkedIn (HTML)
-  → Filtra novos (não respondidos)
-  → DeepSeek-V4-Flash gera reply
-  → Posta reply no LinkedIn
-  → Marca como respondido
-```
-
-Não passa pelo Hermes. Prompt: [`prompts/resposta-comentario.json`](../prompts/resposta-comentario.json).
-
-## Data Tables (n8n)
-
-| Tabela | Função |
-|--------|--------|
-| **LinkedIn Textos Agenda** | Fila de textos (`ready` → `used`) |
-| **LinkedIn Imagens Agenda** | Fila de fotos (`ready` → `used`) |
-| **LinkedIn Posts Monitor** | Posts monitorados para auto-reply |
-| **LinkedIn Posts Diario** | Histórico / anti-dupe |
-
-## Diagrama geral
-
-```
-Você (Telegram)
-  → Hermes (assistente)
-      → /salvar-texto  → webhook → Textos Agenda (ready)
-      → /salvar-foto   → webhook → Imagens Agenda (ready)
-      → /postar        → webhook → texto ready + foto ready → LinkedIn
-      → /monitorar URL → webhook → Posts Monitor
-
-(sem schedule automático — post só via comando Hermes)
-
-*/2m (automático, sem Hermes):
-  Posts Monitor → API LinkedIn → parse comentários
-  → DeepSeek-V4-Flash → reply LinkedIn
-```
-
-## Stack
-
-| Camada | Tecnologia |
-|--------|------------|
-| Assistente | Hermes Agent (Docker na VPS) + Telegram |
-| Orquestração | n8n (VPS Hostinger KVM 2) |
-| Reply IA | DeepSeek-V4-Flash via API LinkedIn |
-| Publicação | LinkedIn OAuth + REST |
-| Memória | Data Tables n8n |
-| Alertas | Telegram Bot |
+### 3. Monitor de Visitantes LinkedIn Premium (n8n a cada 4 horas)
+1. O n8n consulta `GET /profile/views`.
+2. Filtra visitantes inéditos via `seen_viewers.json`.
+3. O DeepSeek v4.1 elabora abordagem de 2 frases conectando o background do visitante a automações e IA.
+4. Notificação detalhada enviada no Telegram destacando recrutadores e tomadores de decisão com link de 1 clique para o perfil.

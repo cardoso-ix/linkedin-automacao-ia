@@ -4,19 +4,32 @@ __pycache__/
 .venv/
 venv/
 
-# Secrets — NUNCA versionar
+# Secrets & Sessions - NUNCA versionar
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 *credentials*
 *secret*
+session/
+shared/
+user_drafts.json
+seen_viewers.json
 
-# OS
+# Images & Media
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.img
+
+# Logs
+*.log
+
+# OS & IDE
 .DS_Store
 Thumbs.db
-
-# IDE
 .idea/
 .vscode/
 .cursor/
