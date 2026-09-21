@@ -8,6 +8,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 
 ## Destaques da Versão 2.0
 
+* **🎯 Radar de Líderes em IA (Sniper Engagement):** Monitoramento contínuo das publicações recentes dos maiores nomes e referências em Inteligência Artificial, LLMs e Automação no Brasil. O sistema varre publicações ativas, gera comentários técnicos e analíticos via DeepSeek v4.1 (sem clichês de IA) e permite curtir e publicar com 1 clique no Telegram, alavancando sua autoridade e alcance orgânico diário.
 * **Engajamento Inteligente via Link (Curtir & Comentar sob Demanda):** Cole o link de qualquer post do LinkedIn no Telegram (`linkedin.com/posts/...` ou `lnkd.in/...`). O robô acessa a publicação pelo Playwright, lê o conteúdo e o autor, o DeepSeek v4.1 gera um comentário técnico sem clichês, e você aprova a curtida e o envio com 1 toque no botão `[✅ Curtir e Comentar Post]`.
 * **Zero Risco de Banimento:** O Playwright roda com Chromium em contexto persistente (`session/profile`), preservando cookies de autenticação reais, com emulação completa de hardware e digitação humanizada com atrasos variáveis.
 * **Anti-IA Editorial Rigoroso:** Configurado no [CONTEXT.md](CONTEXT.md) com proibição de emojis corporativos saturados, travessões artificiais (`—`), listas automáticas e fechamentos apelativos.
@@ -18,6 +19,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 * **Governança & Observabilidade com Coolify v4:** Gestão centralizada dos containers Docker na VPS HostGator, com métricas de CPU/RAM em tempo real, checagens nativas de saúde (`healthcheck`), proxy reverso Traefik v3.7 e isolamento em múltiplos ambientes de projetos.
 * **📸 Print ao Vivo do Robô (`/tela`):** Captura instantânea em 1080p da sessão ativa do Chromium no servidor direto para o chat do Telegram, com status da URL e botões interativos para reabertura de menu ou nova foto.
 * **🚨 Central de Alertas Críticos no Telegram:** Interceptação automática de falhas via nó `errorTrigger` no n8n direcionada para o endpoint `/notify/error` do bridge, avisando você imediatamente no celular se algum workflow quebrar.
+
 
 ---
 
@@ -62,7 +64,10 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 
 | Comando / Ação | O que faz na prática |
 |----------------|----------------------|
-| **Colar link do post** (`lnkd.in` ou `linkedin.com/posts/...`) | **Lê o post, autor e contexto pelo Playwright ➔ DeepSeek v4.1 gera comentário perspicaz ➔ Bot exibe prévia com botões `[✅ Curtir e Comentar Post]`, `[🔄 Gerar Outra Opção]` e `[❌ Cancelar]`. Ao aprovar, o robô curte e publica no LinkedIn automaticamente.** |
+| **🎯 Radar de Líderes** (`/radar` ou botão) | **Varre os feeds dos maiores líderes de IA monitorados ➔ DeepSeek v4.1 redige comentário sênior anti-IA ➔ Apresenta fila interativa com botões `[✅ Curtir e Comentar Post]`, `[🔄 Gerar Outra Opção]`, `[⏭️ Próximo Post]`. Constrói autoridade diária.** |
+| **👥 Líderes Monitorados** (`/lideres`) | Exibe a lista de perfis de referência em IA cadastrados com bio, categoria e link direto. |
+| **➕ Adicionar Líder** (`/adicionarlider <url>`) | Cadastra um novo perfil de referência no radar, extraindo nome e headline automaticamente via Playwright. |
+| **Colar link do post** (`lnkd.in` ou `linkedin.com/posts/...`) | Lê o post, autor e contexto pelo Playwright ➔ DeepSeek v4.1 gera comentário perspicaz ➔ Bot exibe prévia com aprovação em 1 clique. |
 | `/menu` | Abre o painel interativo de botões para ações rápidas com 1 toque. |
 | `/tela` (ou `/print`) | Tira um print 1080p em tempo real da tela do navegador no servidor e envia no chat. |
 | `/post <tema>` | Gera 2 variações completas de post + prompt de imagem para o Meta AI. |
@@ -88,14 +93,16 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 │   ├── docker-compose.yml        # Orquestração do bridge e n8n na VPS
 │   └── .env.example              # Exemplo de variáveis de ambiente
 ├── worker/
-│   ├── app.py                    # FastAPI bridge + Playwright automator
-│   ├── telegram_bot.py           # Daemon do bot Telegram com botões e drafts
+│   ├── app.py                    # FastAPI bridge + Playwright automator + Radar Engine
+│   ├── telegram_bot.py           # Daemon do bot Telegram com botões e Radar queue
+│   ├── ai_leaders.json           # Watchlist de líderes e referências em IA monitorados
 │   ├── Dockerfile                # Imagem Docker com Playwright + Python + Xvfb
 │   ├── start.sh                  # Inicializador do Xvfb e servidor Uvicorn
 │   └── requirements.txt          # Dependências Python
 ├── workflows/
-│   ├── linkedin_comment_monitor.json       # Workflow n8n de comentários
-│   ├── linkedin_profile_views_monitor.json # Workflow n8n de visitantes Premium
+│   ├── linkedin_radar_monitor.json         # Workflow n8n diário do Radar de IA (09:30)
+│   ├── linkedin_comment_monitor.json       # Workflow n8n de comentários (30m)
+│   ├── linkedin_profile_views_monitor.json # Workflow n8n de visitantes Premium (4h)
 │   └── n8n_error_handler.json              # Workflow n8n interceptor e notificador de erros
 ├── legacy/                       # Códigos e docs legados arquivados
 └── scripts/
@@ -103,6 +110,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
     ├── deploy_features.py        # Script de deploy e sincronização de containers
     └── verify_deploy.py          # Verificador automatizado de saúde e testes HTTP
 ```
+
 
 ---
 

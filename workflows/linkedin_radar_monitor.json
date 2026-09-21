@@ -1,0 +1,142 @@
+{
+  "id": "Rad4rL1d3r3sIA99",
+  "name": "LinkedIn Radar de Líderes em IA (Sniper Engagement)",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-radar",
+      "name": "Dias Úteis às 09:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://linkedin-bridge:8000/radar/scan?limit=3",
+        "options": {}
+      },
+      "id": "http-scan-radar",
+      "name": "Escanear Radar de Líderes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const count = $input.first().json.count || 0;\nconst opps = $input.first().json.opportunities || [];\nif (count === 0 || opps.length === 0) {\n  return [];\n}\nreturn opps.map(o => ({ json: o }));"
+      },
+      "id": "filter-opps",
+      "name": "Filtrar Oportunidades",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://opencode.ai/zen/go/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer SUA_OPENCODE_API_KEY"
+            },
+            {
+              "name": "x-opencode-session",
+              "value": "=session_radar_{{ $now.toMillis() }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-v4.1-flash\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Voce e o Eduardo Cardoso no LinkedIn (atua com Automacao, IA Agentica, n8n e Integracoes).\\nCrie um comentario perspicaz, construtivo e inteligente para enriquecer a discussao sobre a postagem.\\nRegras estritas anti-IA:\\n1. NUNCA comece bajulando ('Parabens pelo post', 'Excelente reflexao', 'Muito bom', 'Concordo'). Comece direto pelo argumento.\\n2. NUNCA use emojis corporativos (sem 🚀, sem 🔥, sem 💡, sem 👏, sem 👇).\\n3. NUNCA use travessoes (—) nem topicos/listas numeradas.\\n4. Seja conciso (no maximo 2 ou 3 frases). Traga um ponto pratico, tecnico ou questionamento inteligente.\\n5. Soa 100% natural, como um colega senior de mercado comentando.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Lider: \" + $json.leader_name + \" (\" + $json.leader_headline + \")\\nPost: \" + $json.post_text\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "id": "deepseek-generate-radar-comment",
+      "name": "DeepSeek Comentário Anti-IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/botSEU_TELEGRAM_TOKEN/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"SEU_CHAT_ID\",\n  \"text\": \"🎯 *Radar de Líderes em IA — Oportunidade Matinal!*\\n\\n👤 *\" + $('Filtrar Oportunidades').item.json.leader_name + \"* (\" + ($('Filtrar Oportunidades').item.json.time_ago || \"Recente\") + \")\\n📌 \" + $('Filtrar Oportunidades').item.json.leader_headline + \"\\n🔗 [Acessar Post no LinkedIn](\" + $('Filtrar Oportunidades').item.json.post_url + \")\\n\\n📝 *Trecho do Post:*\\n_\" + $('Filtrar Oportunidades').item.json.post_text.substring(0, 250) + \"..._\\n\\n💬 *Sugestão de Comentário Anti-IA (DeepSeek v4.1):*\\n_\" + $json.choices[0].message.content.trim() + \"_\\n\\n💡 *Dica:* Para revisar e aprovar esta e outras postagens com 1 clique, digite `/radar` no bot!\",\n  \"parse_mode\": \"Markdown\"\n}",
+        "options": {}
+      },
+      "id": "telegram-notify-radar",
+      "name": "Notificar Oportunidade no Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Dias Úteis às 09:30": {
+      "main": [
+        [
+          {
+            "node": "Escanear Radar de Líderes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escanear Radar de Líderes": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Oportunidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Oportunidades": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek Comentário Anti-IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Comentário Anti-IA": {
+      "main": [
+        [
+          {
+            "node": "Notificar Oportunidade no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "ErrTr1gg3r999999"
+  }
+}

@@ -22,6 +22,44 @@ LI_AT_COOKIE = os.getenv("LINKEDIN_LI_AT", "")
 os.makedirs(PROFILE_DIR, exist_ok=True)
 os.makedirs(SHARED_DIR, exist_ok=True)
 
+LEADERS_FILE = os.path.join(os.path.dirname(__file__), "ai_leaders.json")
+SEEN_RADAR_FILE = os.path.join(SESSION_DIR, "seen_radar_posts.json")
+
+def load_ai_leaders() -> List[Dict]:
+    if os.path.exists(LEADERS_FILE):
+        try:
+            with open(LEADERS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[!] Erro ao carregar leaders: {e}")
+    return []
+
+def save_ai_leaders(leaders: List[Dict]):
+    try:
+        with open(LEADERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(leaders, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[!] Erro ao salvar leaders: {e}")
+
+def load_seen_radar_posts() -> set:
+    if os.path.exists(SEEN_RADAR_FILE):
+        try:
+            with open(SEEN_RADAR_FILE, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+        except Exception:
+            pass
+    return set()
+
+def mark_radar_post_seen(post_url: str):
+    seen = load_seen_radar_posts()
+    clean = post_url.split("?")[0].strip()
+    seen.add(clean)
+    try:
+        with open(SEEN_RADAR_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(seen), f, indent=2)
+    except Exception as e:
+        print(f"[!] Erro ao salvar seen posts: {e}")
+
 class PlaywrightManager:
     def __init__(self):
         self.playwright: Optional[Playwright] = None
@@ -135,6 +173,12 @@ class ErrorNotificationRequest(BaseModel):
     error_message: Optional[str] = "Erro não especificado"
     execution_id: Optional[str] = None
 
+class AddLeaderRequest(BaseModel):
+    name: Optional[str] = None
+    profile_url: str
+    headline: Optional[str] = None
+    category: Optional[str] = "IA & Tecnologia"
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "linkedin-bridge"}
@@ -187,6 +231,162 @@ async def dispatch_menu():
     from telegram_bot import send_main_menu
     send_main_menu()
     return {"status": "menu_dispatched"}
+
+async def fetch_leader_profile_info(profile_url: str) -> Dict[str, str]:
+    """Acessa a URL do perfil e extrai nome e headline automaticamente"""
+    page = await pw_manager.get_page()
+    clean_url = profile_url.split("?")[0].strip().rstrip("/")
+    await page.goto(clean_url, wait_until="domcontentloaded", timeout=35000)
+    await page.wait_for_timeout(3000)
+    
+    info = await page.evaluate('''() => {
+        const h1 = document.querySelector('h1');
+        const headline = document.querySelector('.text-body-medium.break-words, div.text-body-medium');
+        return {
+            name: h1 ? h1.innerText.trim() : '',
+            headline: headline ? headline.innerText.trim() : ''
+        };
+    }''')
+    
+    name = info.get("name") or clean_url.split("/in/")[-1].replace("-", " ").title()
+    headline = info.get("headline") or "Referência em IA & Tecnologia"
+    return {"name": name, "headline": headline, "profile_url": clean_url}
+
+async def scan_radar_opportunities(limit: int = 3) -> List[Dict]:
+    """
+    Varre a atividade recente dos líderes em IA cadastrados,
+    identificando publicações recentes com alto potencial de engajamento.
+    """
+    leaders = load_ai_leaders()
+    if not leaders:
+        return []
+
+    seen_urls = load_seen_radar_posts()
+    page = await pw_manager.get_page()
+    opportunities = []
+
+    # Embaralha para variar a ordem de varredura
+    shuffled_leaders = [l for l in leaders if l.get("active", True)]
+    random.shuffle(shuffled_leaders)
+
+    for leader in shuffled_leaders:
+        if len(opportunities) >= limit:
+            break
+
+        profile_url = leader.get("profile_url", "").strip().rstrip("/")
+        if not profile_url:
+            continue
+
+        activity_url = f"{profile_url}/recent-activity/all/"
+        print(f"[*] Radar: Consultando publicações de {leader.get('name')} ({activity_url})...")
+
+        try:
+            await page.goto(activity_url, wait_until="domcontentloaded", timeout=35000)
+            await page.wait_for_timeout(random.randint(3000, 4500))
+
+            posts = await page.evaluate('''() => {
+                const results = [];
+                const elements = document.querySelectorAll('div.feed-shared-update-v2, div[data-urn*="activity"]');
+                for (const el of elements) {
+                    const urn = el.getAttribute('data-urn') || '';
+                    let postUrl = '';
+                    if (urn) {
+                        postUrl = 'https://www.linkedin.com/feed/update/' + urn + '/';
+                    } else {
+                        const link = el.querySelector('a[href*="/feed/update/"], a[href*="/posts/"]');
+                        if (link) postUrl = link.href.split('?')[0];
+                    }
+
+                    const textEl = el.querySelector('.update-components-text, .feed-shared-update-v2__description, .feed-shared-text');
+                    const text = textEl ? textEl.innerText.trim().replace(/\\s+/g, ' ') : '';
+
+                    let timeAgo = '';
+                    const spans = el.querySelectorAll('.update-components-actor__sub-description span, .feed-shared-actor__sub-description span');
+                    for (const s of spans) {
+                        const t = s.innerText ? s.innerText.trim() : '';
+                        if (t.includes('h') || t.includes('d') || t.includes('m') || t.includes('sem') || t.includes('hora') || t.includes('dia')) {
+                            timeAgo = t;
+                            break;
+                        }
+                    }
+
+                    if (text && text.length > 50 && postUrl) {
+                        results.push({
+                            url: postUrl.split('?')[0],
+                            text: text.substring(0, 1200),
+                            timeAgo: timeAgo
+                        });
+                    }
+                }
+                return results;
+            }''')
+
+            for p in posts:
+                p_url = p["url"].split("?")[0]
+                if p_url not in seen_urls:
+                    opportunities.append({
+                        "leader_name": leader.get("name"),
+                        "leader_headline": leader.get("headline", ""),
+                        "category": leader.get("category", "IA & Tecnologia"),
+                        "post_url": p_url,
+                        "post_text": p["text"],
+                        "time_ago": p.get("timeAgo", "")
+                    })
+                    seen_urls.add(p_url)
+                    print(f"[+] Oportunidade identificada: {leader.get('name')} -> {p_url}")
+                    break
+
+            await asyncio.sleep(random.uniform(2.0, 4.0))
+
+        except Exception as e:
+            print(f"[!] Erro ao varrer líder {leader.get('name')}: {e}")
+            continue
+
+    return opportunities
+
+@app.get("/radar/leaders")
+async def get_leaders_endpoint():
+    """Retorna a lista de líderes monitorados no Radar de IA"""
+    leaders = load_ai_leaders()
+    return {"count": len(leaders), "leaders": leaders}
+
+@app.post("/radar/leaders")
+async def add_leader_endpoint(req: AddLeaderRequest):
+    """Adiciona um novo perfil de líder à watchlist do Radar"""
+    clean_url = req.profile_url.split("?")[0].strip().rstrip("/")
+    leaders = load_ai_leaders()
+    for l in leaders:
+        if l.get("profile_url", "").strip().rstrip("/") == clean_url:
+            return {"status": "already_exists", "leader": l}
+
+    name = req.name
+    headline = req.headline
+    if not name:
+        try:
+            fetched = await fetch_leader_profile_info(clean_url)
+            name = fetched.get("name")
+            headline = fetched.get("headline")
+        except Exception:
+            name = clean_url.split("/in/")[-1].replace("-", " ").title()
+            headline = "Referência em IA & Tecnologia"
+
+    new_leader = {
+        "id": re.sub(r'[^a-zA-Z0-9-]', '', (name or "lider").lower().replace(' ', '-')),
+        "name": name,
+        "profile_url": clean_url,
+        "headline": headline or "Referência em IA & Tecnologia",
+        "category": req.category or "IA & Tecnologia",
+        "active": True
+    }
+    leaders.append(new_leader)
+    save_ai_leaders(leaders)
+    return {"status": "added", "leader": new_leader}
+
+@app.get("/radar/scan")
+async def scan_radar_endpoint(limit: int = 3):
+    """Executa a busca por novas postagens de líderes em IA"""
+    opps = await scan_radar_opportunities(limit=limit)
+    return {"count": len(opps), "opportunities": opps}
 
 @app.get("/status")
 async def status():
@@ -422,6 +622,7 @@ async def engage_post(req: PostEngageRequest):
             print("[*] Comentário enviado! Aguardando confirmação...")
             await page.wait_for_timeout(3500)
 
+        mark_radar_post_seen(clean_url)
         return {
             "success": True,
             "liked": liked,

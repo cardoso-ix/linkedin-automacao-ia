@@ -1,0 +1,58 @@
+[
+  {
+    "id": "anderson-pereira",
+    "name": "Anderson Pereira",
+    "profile_url": "https://www.linkedin.com/in/andersonpereiratech/",
+    "headline": "CTO & Founder da Lynse | Engenharia de Software + IA aplicada",
+    "category": "IA & Engenharia",
+    "active": true
+  },
+  {
+    "id": "luciano-santos",
+    "name": "Luciano Santos",
+    "profile_url": "https://www.linkedin.com/in/lucianossantos/",
+    "headline": "Autor best-seller | Liderança e Educação Corporativa",
+    "category": "Liderança & Negócios",
+    "active": true
+  },
+  {
+    "id": "sandro-valichek",
+    "name": "Sandro Valichek",
+    "profile_url": "https://www.linkedin.com/in/sandrovalichek/",
+    "headline": "Especialista em Inteligência Artificial e Automação Executiva",
+    "category": "IA & Automação",
+    "active": true
+  },
+  {
+    "id": "arthur-gurgel",
+    "name": "Arthur Gurgel",
+    "profile_url": "https://www.linkedin.com/in/arthurgurgel/",
+    "headline": "Especialista em Agentes de IA e Arquitetura de LLMs",
+    "category": "IA Agêntica",
+    "active": true
+  },
+  {
+    "id": "diego-barreto",
+    "name": "Diego Barreto",
+    "profile_url": "https://www.linkedin.com/in/diego-barreto-ifood/",
+    "headline": "VP no iFood | Nova Economia, Inovação e Inteligência Artificial",
+    "category": "Inovação & IA",
+    "active": true
+  },
+  {
+    "id": "fabio-akita",
+    "name": "Fabio Akita",
+    "profile_url": "https://www.linkedin.com/in/akitaonrails/",
+    "headline": "Cofundador da Codeminer 42 | Referência Técnica em Software",
+    "category": "Engenharia de Software",
+    "active": true
+  },
+  {
+    "id": "miguel-fernandez",
+    "name": "Miguel Fernandez",
+    "profile_url": "https://www.linkedin.com/in/miguel-fernandez-ia/",
+    "headline": "Consultor e Desenvolvedor de Soluções com IA Generativa",
+    "category": "IA Generativa",
+    "active": true
+  }
+]

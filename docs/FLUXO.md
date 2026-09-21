@@ -10,6 +10,9 @@ O sistema conecta 3 camadas principais em uma infraestrutura em container na nuv
 ```
 +-------------------------------------------------------------------------+
 |                              TELEGRAM                                   |
+|   - /radar                  --> Ativa fila de oportunidades de líderes  |
+|   - /lideres                --> Lista referências em IA monitoradas     |
+|   - /adicionarlider <url>   --> Cadastra novo líder na watchlist        |
 |   - Link do LinkedIn (Post) --> Extração + IA Comentário + 1-Tap Publicação
 |   - /post <tema>            --> Dual Draft (Story vs Arq) + Meta AI     |
 |   - /visitantes             --> Relatório Instantâneo de Visitantes     |
@@ -19,6 +22,9 @@ O sistema conecta 3 camadas principais em uma infraestrutura em container na nuv
                                      v
 +------------------------------------+------------------------------------+
 |                    LINKEDIN BRIDGE (FastAPI + Playwright)               |
+|   - GET  /radar/leaders         --> Lista watchlist de líderes em IA    |
+|   - POST /radar/leaders         --> Adiciona novo líder (auto-extract)  |
+|   - GET  /radar/scan            --> Varre publicações recentes nos feeds|
 |   - POST /analyze/post          --> Acessa URL, extrai autor e conteúdo |
 |   - POST /engage/post           --> Curte o post e comenta com delay    |
 |   - POST /publish/post          --> Publica post com/sem imagem         |
@@ -30,12 +36,14 @@ O sistema conecta 3 camadas principais em uma infraestrutura em container na nuv
                                      |
 +------------------------------------+------------------------------------+
 |                                  N8N                                    |
-|   - Workflow 1 (30 min): Monitor de comentários + DeepSeek + Aprovação |
-|   - Workflow 2 (4 h):    Monitor de visitantes Premium + Abordagens     |
+|   - Workflow Radar (09:30): Varredura diária de líderes + Notificação   |
+|   - Workflow 1 (30 min):    Monitor de comentários + DeepSeek + Aprovação
+|   - Workflow 2 (4 h):       Monitor de visitantes Premium + Abordagens  |
 +-------------------------------------------------------------------------+
 ```
 
 ## Fluxos Detalhados
+
 
 ---
 
@@ -112,3 +120,28 @@ Este é o fluxo mais rápido e frequente para construir autoridade diária no Li
 4. Uma requisição POST interna é enviada para `http://linkedin-bridge:8000/notify/error` contendo nome do workflow, nó que falhou, ID de execução e mensagem de erro.
 5. A bridge formata um alerta prioritário visual com bloco de código e envia instantaneamente ao Telegram de Eduardo.
 6. Eduardo pode a qualquer momento testar este canal de forma preventiva usando o comando `/testealerta` ou o botão `[🚨 Testar Notificação de Erro]` no `/menu`.
+
+---
+
+### 7. Radar de Líderes em IA — Sniper Engagement Diário (`/radar`, `/lideres`, `/adicionarlider`)
+
+Este fluxo implementa a estratégia de crescimento acelerado de autoridade orgânica no LinkedIn por meio de interações diárias inteligentes em publicações de referências da área:
+1. **Watchlist Curada:** Os perfis monitorados residem em `worker/ai_leaders.json`. Eduardo pode consultar a lista com `/lideres` ou cadastrar novos perfis enviando `/adicionarlider https://www.linkedin.com/in/perfil`. Ao adicionar, o Playwright visita a página, extrai o nome e a headline real e persiste a entrada.
+2. **Varredura Automatizada:**
+   - **Gatilho Agendado:** O workflow do n8n `LinkedIn Radar de Líderes em IA` executa de segunda a sexta-feira às 09:30 AM e aciona `GET /radar/scan?limit=3`.
+   - **Gatilho Sob Demanda:** Eduardo pode enviar `/radar` ou tocar no botão `[🎯 Radar de Líderes em IA]` no `/menu` a qualquer momento no Telegram.
+3. **Extração de Posts no Playwright:**
+   - O robô acessa a aba de publicações recentes (`/recent-activity/all/`) dos perfis da watchlist de forma intercalada com delays humanos realistas (3s a 5s).
+   - Extrai o URN da atividade, texto da postagem (>50 caracteres) e tempo de publicação.
+   - Filtra postagens já vistas anteriormente consultando o registro persistente `session/seen_radar_posts.json`.
+4. **Geração Anti-IA (DeepSeek v4.1):**
+   - O post é processado pelo DeepSeek v4.1 com as diretrizes do `CONTEXT.md`: sem introduções vazias ("Excelente reflexão"), sem emojis corporativos exagerados, sem travessões longos artificiais (`—`) e com tom analítico sênior de colega para colega.
+5. **Apresentação em Fila Interativa no Telegram:**
+   - O bot apresenta a primeira oportunidade identificada com os botões:
+     - `[✅ Curtir e Comentar Post]` — Publica a reação e o comentário via Playwright com delay humano (15-30s) e oferece botão para avançar para o próximo post.
+     - `[🔄 Gerar Outra Opção]` — Gera uma versão alternativa de comentário para o mesmo post.
+     - `[⏭️ Próximo Post]` — Pula para a próxima oportunidade da fila sem comentar.
+     - `[❌ Encerrar]` — Finaliza a sessão do radar.
+6. **Deduplicação & Proteção:**
+   - Ao interagir ou pular, o URL canônico do post é registrado em `seen_radar_posts.json`, garantindo que o mesmo post nunca mais seja sugerido ou incomode o usuário.
+

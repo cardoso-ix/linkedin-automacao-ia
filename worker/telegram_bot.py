@@ -38,6 +38,7 @@ user_drafts: Dict[str, Dict] = load_user_drafts()
 pending_engagements: Dict[str, Dict] = {}
 pending_replies: Dict[str, Dict] = {}
 pending_post_proposals: Dict[str, Dict] = {}
+pending_radar_queue: Dict[str, list] = {}
 
 def send_telegram_message(text: str, reply_markup: Optional[dict] = None) -> Optional[int]:
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -247,23 +248,29 @@ LINKEDIN_URL_REGEX = re.compile(r"https?://(?:[a-zA-Z0-9-]+\.)?(?:linkedin\.com|
 
 HELP_TEXT = (
     "💡 *Guia do Assistente LinkedIn — Eduardo Cardoso*\n\n"
-    "Seu assistente conta exclusivamente com as funções essenciais para o seu dia a dia:\n\n"
-    "1️⃣ *Curtir e Comentar Posts de Terceiros:*\n"
-    "• Cole o link de qualquer post do LinkedIn aqui no chat (ex: `https://www.linkedin.com/posts/...` ou `lnkd.in/...`).\n"
-    "• O assistente extrai o autor e o texto, e o DeepSeek v4.1 redige um comentário perspicaz e sem clichês.\n"
-    "• Você aprova com 1 clique no botão `[✅ Curtir e Comentar Post]`!\n\n"
-    "2️⃣ *Criar Nova Publicação:*\n"
+    "Seu assistente conta com as funções essenciais para potencializar seu perfil:\n\n"
+    "1️⃣ *🎯 Radar de Líderes em IA (Sniper Engagement):*\n"
+    "• Digite `/radar` ou clique no botão do menu para varrer publicações recentes dos maiores nomes em IA e Automação.\n"
+    "• O DeepSeek v4.1 redige comentários técnicos perspicazes sem clichês de IA.\n"
+    "• Você aprova com 1 clique para curtir e comentar, construindo autoridade diária.\n"
+    "• Comandos: `/radar` (buscar posts), `/lideres` (ver lista), `/adicionarlider <url>` (adicionar novo perfil).\n\n"
+    "2️⃣ *🔗 Curtir e Comentar Posts de Terceiros:*\n"
+    "• Cole o link de qualquer post do LinkedIn aqui no chat (ex: `https://www.linkedin.com/posts/...`).\n"
+    "• O assistente extrai o autor e o texto e sugere um comentário pronto para aprovação.\n\n"
+    "3️⃣ *✍️ Criar Nova Publicação:*\n"
     "• Envie `/post sua ideia ou tema` (ex: `/post Agentes autônomos integrados ao n8n`).\n"
-    "• O DeepSeek v4.1 gera a cópia completa otimizada para leitura no celular.\n"
-    "• Se desejar imagem, basta enviar a foto logo em seguida e confirmar!\n\n"
-    "3️⃣ *Comandos Rápidos:*\n"
-    "• `/menu` — Abre o painel com botões interativos de ação rápida\n"
+    "• O DeepSeek v4.1 gera 2 variações humanizadas e o prompt para imagem técnica no Meta AI.\n\n"
+    "4️⃣ *⚡ Comandos Rápidos:*\n"
+    "• `/menu` — Abre o painel interativo com botões de ação rápida\n"
+    "• `/radar` — Ativa o radar de engajamento em líderes de IA\n"
+    "• `/lideres` — Lista os líderes de IA monitorados\n"
     "• `/tela` — Tira um print em tempo real da tela do navegador no servidor\n"
     "• `/visitantes` — Lista quem visitou seu perfil recentemente no LinkedIn Premium\n"
     "• `/status` — Checa a saúde da sessão do LinkedIn, IA e servidor\n"
     "• `/testealerta` — Dispara teste do canal de alertas críticos no Telegram\n"
     "• `/ajuda` — Mostra este guia de instruções"
 )
+
 
 async def handle_screenshot(pw_manager, msg_id: Optional[int] = None):
     initial_text = "📸 *Capturando tela ao vivo do navegador no servidor...*"
@@ -370,6 +377,177 @@ async def handle_profile_views(msg_id: Optional[int] = None):
         else:
             send_telegram_message(err)
 
+async def handle_radar_scan(pw_manager, msg_id: Optional[int] = None):
+    initial_text = "🎯 *Ativando Radar de Líderes em IA...*\n_Varrendo perfis de referência e publicações recentes no LinkedIn..._"
+    if msg_id:
+        edit_telegram_message(msg_id, initial_text)
+    else:
+        send_telegram_message(initial_text)
+
+    from app import scan_radar_opportunities
+    try:
+        opps = await scan_radar_opportunities(limit=3)
+        if not opps:
+            empty_msg = (
+                "ℹ️ *Nenhuma publicação nova não-vista encontrada no momento!*\n\n"
+                "• Todas as publicações recentes dos líderes monitorados já foram visualizadas/engajadas anteriormente, ou nenhum líder postou novidade nas últimas horas.\n\n"
+                "💡 *Dicas:*\n"
+                "• Para adicionar mais perfis de referência: `/adicionarlider <url>`\n"
+                "• Para ver os líderes monitorados: `/lideres`"
+            )
+            keyboard = {
+                "inline_keyboard": [
+                    [{"text": "👥 Ver Líderes Monitorados", "callback_data": "menu_action:leaders"}],
+                    [{"text": "⚡ Voltar ao Menu", "callback_data": "menu_action:reopen"}]
+                ]
+            }
+            if msg_id:
+                edit_telegram_message(msg_id, empty_msg, reply_markup=keyboard)
+            else:
+                send_telegram_message(empty_msg, reply_markup=keyboard)
+            return
+
+        pending_radar_queue[ADMIN_CHAT_ID] = opps
+        await present_next_radar_opportunity(msg_id)
+    except Exception as e:
+        err = f"❌ *Erro ao executar varredura do radar:* {e}"
+        if msg_id:
+            edit_telegram_message(msg_id, err)
+        else:
+            send_telegram_message(err)
+
+async def present_next_radar_opportunity(msg_id: Optional[int] = None):
+    queue = pending_radar_queue.get(ADMIN_CHAT_ID, [])
+    if not queue:
+        finished_text = (
+            "🎉 *Varredura do Radar de IA Concluída!*\n\n"
+            "Você engajou ou revisou todas as oportunidades identificadas nesta rodada.\n"
+            "Essa constância diária em posts de alto valor é o que posiciona sua autoridade técnica e impulsiona seu perfil organicamente no LinkedIn."
+        )
+        keyboard = {
+            "inline_keyboard": [
+                [{"text": "⚡ Voltar ao Menu Principal", "callback_data": "menu_action:reopen"}],
+                [{"text": "👥 Ver Líderes Monitorados", "callback_data": "menu_action:leaders"}]
+            ]
+        }
+        if msg_id:
+            edit_telegram_message(msg_id, finished_text, reply_markup=keyboard)
+        else:
+            send_telegram_message(finished_text, reply_markup=keyboard)
+        return
+
+    opp = queue.pop(0)
+    pending_radar_queue[ADMIN_CHAT_ID] = queue
+
+    waiting_text = f"🧠 *Oportunidade encontrada ({opp['leader_name']})!*\n✍️ _Gerando comentário sênior anti-IA com o DeepSeek v4.1..._"
+    if msg_id:
+        edit_telegram_message(msg_id, waiting_text)
+    else:
+        msg_id = send_telegram_message(waiting_text)
+
+    prompt = f"Post de {opp['leader_name']} ({opp.get('leader_headline', '')}):\n'{opp['post_text']}'"
+    generated_comment = await asyncio.to_thread(call_deepseek, prompt, "engage")
+
+    engage_id = uuid.uuid4().hex[:8]
+    pending_engagements[engage_id] = {
+        "post_url": opp["post_url"],
+        "author": opp["leader_name"],
+        "text": opp["post_text"],
+        "comment_text": generated_comment,
+        "is_radar": True
+    }
+
+    keyboard = {
+        "inline_keyboard": [
+            [{"text": "✅ Curtir e Comentar Post", "callback_data": f"approve_engage:{engage_id}"}],
+            [{"text": "🔄 Gerar Outra Opção", "callback_data": f"regen_engage:{engage_id}"}],
+            [
+                {"text": "⏭️ Próximo Post", "callback_data": "next_radar"},
+                {"text": "❌ Encerrar", "callback_data": "cancel_radar"}
+            ]
+        ]
+    }
+
+    remaining = len(queue)
+    header_count = f"_(Restam {remaining} oportunidades nesta rodada)_" if remaining > 0 else "_(Última oportunidade desta rodada)_"
+
+    body = (
+        f"🎯 *Radar de Líderes em IA — Oportunidade Encontrada*\n{header_count}\n\n"
+        f"👤 *Líder:* {opp['leader_name']}\n"
+        f"📌 *Bio:* _{opp.get('leader_headline', 'Referência em IA & Tecnologia')}_\n"
+        f"⏰ *Publicado:* {opp.get('time_ago') or 'Recentemente'}\n"
+        f"🔗 [Acessar Post no LinkedIn]({opp['post_url']})\n\n"
+        f"📝 *Trecho do Post:*\n"
+        f"_{opp['post_text'][:300]}..._\n\n"
+        f"💬 *Sugestão de Comentário Anti-IA (DeepSeek v4.1):*\n"
+        f"_{generated_comment}_\n\n"
+        f"👉 *Deseja curtir e publicar este comentário?*"
+    )
+    if msg_id:
+        edit_telegram_message(msg_id, body, reply_markup=keyboard)
+    else:
+        send_telegram_message(body, reply_markup=keyboard)
+
+async def handle_list_leaders(msg_id: Optional[int] = None):
+    from app import load_ai_leaders
+    leaders = load_ai_leaders()
+    lines = [
+        f"👥 *Líderes e Referências em IA Monitorados ({len(leaders)} perfis):*\n",
+        "O radar acompanha esses perfis e traz publicações recentes para engajamento tático:\n"
+    ]
+    for i, l in enumerate(leaders, 1):
+        name = l.get("name", "Líder")
+        cat = l.get("category", "IA & Tecnologia")
+        headline = l.get("headline", "")
+        url = l.get("profile_url", "")
+        lines.append(f"{i}. *{name}* ({cat})\n   📌 _{headline[:60]}_\n   🔗 [Ver Perfil]({url})\n")
+
+    lines.append("💡 *Para adicionar um novo perfil, envie:*\n`/adicionarlider https://www.linkedin.com/in/usuario`")
+    full_text = "\n".join(lines)
+
+    keyboard = {
+        "inline_keyboard": [
+            [{"text": "🎯 Ativar Radar Agora", "callback_data": "menu_action:radar"}],
+            [{"text": "⚡ Voltar ao Menu", "callback_data": "menu_action:reopen"}]
+        ]
+    }
+    if msg_id:
+        edit_telegram_message(msg_id, full_text, reply_markup=keyboard)
+    else:
+        send_telegram_message(full_text, reply_markup=keyboard)
+
+async def handle_add_leader(profile_url: str):
+    send_telegram_message(f"🔍 *Acessando perfil e cadastrando no Radar de IA...*\n`{profile_url}`")
+    from app import add_leader_endpoint, AddLeaderRequest
+    try:
+        req = AddLeaderRequest(profile_url=profile_url)
+        res = await add_leader_endpoint(req)
+        leader = res.get("leader", {})
+        if res.get("status") == "already_exists":
+            send_telegram_message(
+                f"⚠️ *Este perfil já está cadastrado no Radar:*\n\n"
+                f"👤 *Nome:* {leader.get('name')}\n"
+                f"📌 *Bio:* {leader.get('headline')}\n"
+                f"🔗 [Acessar Perfil]({leader.get('profile_url')})"
+            )
+        else:
+            keyboard = {
+                "inline_keyboard": [
+                    [{"text": "🎯 Disparar Radar Agora", "callback_data": "menu_action:radar"}],
+                    [{"text": "👥 Ver Todos os Líderes", "callback_data": "menu_action:leaders"}]
+                ]
+            }
+            send_telegram_message(
+                f"✅ *Novo Líder adicionado com sucesso ao Radar!* 🚀\n\n"
+                f"👤 *Nome:* {leader.get('name')}\n"
+                f"📌 *Bio:* {leader.get('headline')}\n"
+                f"🏷️ *Categoria:* {leader.get('category')}\n"
+                f"🔗 [Acessar Perfil]({leader.get('profile_url')})",
+                reply_markup=keyboard
+            )
+    except Exception as e:
+        send_telegram_message(f"❌ *Erro ao adicionar perfil ao radar:* {e}")
+
 def send_main_menu(message_id: Optional[int] = None):
     text = (
         "⚡ *Painel de Controle — Assistente LinkedIn*\n\n"
@@ -377,6 +555,8 @@ def send_main_menu(message_id: Optional[int] = None):
     )
     keyboard = {
         "inline_keyboard": [
+            [{"text": "🎯 Radar de Líderes em IA", "callback_data": "menu_action:radar"}],
+            [{"text": "👥 Ver Líderes Monitorados", "callback_data": "menu_action:leaders"}],
             [{"text": "✍️ Criar Novo Post", "callback_data": "menu_action:post"}],
             [{"text": "📸 Ver Tela do Robô (Print ao Vivo)", "callback_data": "menu_action:screenshot"}],
             [{"text": "👀 Quem Viu Meu Perfil (Premium)", "callback_data": "menu_action:views"}],
@@ -398,6 +578,8 @@ async def run_telegram_loop(pw_manager):
     send_telegram_message(
         "🤖 *Assistente LinkedIn Conectado e Operacional!*\n\n"
         "Menu limpo e configurado com os recursos essenciais:\n"
+        "• 🎯 `/radar` — Ativar radar de engajamento em líderes de IA\n"
+        "• 👥 `/lideres` — Ver lista de referências em IA monitoradas\n"
         "• ✍️ `/post <ideia>` — Criar publicação com ou sem foto\n"
         "• 📸 `/tela` — Ver tela do robô em tempo real\n"
         "• 📊 `/status` — Verificar saúde da conexão e serviços\n"
@@ -406,6 +588,7 @@ async def run_telegram_loop(pw_manager):
         "• ⚡ `/menu` — Painel interativo com botões rápidos\n\n"
         "🔗 _Dica: Você também pode colar qualquer link do LinkedIn aqui para curtir e comentar._"
     )
+
 
     while True:
         try:
@@ -453,13 +636,29 @@ async def run_telegram_loop(pw_manager):
                                     like_first=True
                                 )
                                 res = await engage_post(req)
-                                edit_telegram_message(
-                                    msg_id,
-                                    f"✅ *Sucesso absoluto!*\n\n"
-                                    f"• *Post curtido:* Sim (Reação Gostei)\n"
-                                    f"• *Comentário publicado no perfil de:* {item['author']}\n"
-                                    f"• *Texto enviado:* _{item['comment_text']}_"
-                                )
+                                if item.get("is_radar"):
+                                    keyboard = {
+                                        "inline_keyboard": [
+                                            [{"text": "⏭️ Próximo Post do Radar", "callback_data": "next_radar"}],
+                                            [{"text": "⚡ Voltar ao Menu", "callback_data": "menu_action:reopen"}]
+                                        ]
+                                    }
+                                    edit_telegram_message(
+                                        msg_id,
+                                        f"✅ *Sucesso absoluto!*\n\n"
+                                        f"• *Post curtido:* Sim (Reação Gostei)\n"
+                                        f"• *Comentário publicado no perfil de:* {item['author']}\n"
+                                        f"• *Texto enviado:* _{item['comment_text']}_",
+                                        reply_markup=keyboard
+                                    )
+                                else:
+                                    edit_telegram_message(
+                                        msg_id,
+                                        f"✅ *Sucesso absoluto!*\n\n"
+                                        f"• *Post curtido:* Sim (Reação Gostei)\n"
+                                        f"• *Comentário publicado no perfil de:* {item['author']}\n"
+                                        f"• *Texto enviado:* _{item['comment_text']}_"
+                                    )
                                 pending_engagements.pop(engage_id, None)
                             except Exception as e:
                                 edit_telegram_message(msg_id, f"❌ *Erro ao publicar no LinkedIn:* {e}")
@@ -476,16 +675,28 @@ async def run_telegram_loop(pw_manager):
                             new_comment = await asyncio.to_thread(call_deepseek, prompt, "engage")
                             item["comment_text"] = new_comment
 
-                            keyboard = {
-                                "inline_keyboard": [
-                                    [{"text": "✅ Curtir e Comentar Post", "callback_data": f"approve_engage:{engage_id}"}],
-                                    [{"text": "🔄 Gerar Outra Opção", "callback_data": f"regen_engage:{engage_id}"}],
-                                    [{"text": "❌ Cancelar", "callback_data": f"cancel_engage:{engage_id}"}]
-                                ]
-                            }
+                            if item.get("is_radar"):
+                                keyboard = {
+                                    "inline_keyboard": [
+                                        [{"text": "✅ Curtir e Comentar Post", "callback_data": f"approve_engage:{engage_id}"}],
+                                        [{"text": "🔄 Gerar Outra Opção", "callback_data": f"regen_engage:{engage_id}"}],
+                                        [
+                                            {"text": "⏭️ Próximo Post", "callback_data": "next_radar"},
+                                            {"text": "❌ Encerrar", "callback_data": "cancel_radar"}
+                                        ]
+                                    ]
+                                }
+                            else:
+                                keyboard = {
+                                    "inline_keyboard": [
+                                        [{"text": "✅ Curtir e Comentar Post", "callback_data": f"approve_engage:{engage_id}"}],
+                                        [{"text": "🔄 Gerar Outra Opção", "callback_data": f"regen_engage:{engage_id}"}],
+                                        [{"text": "❌ Cancelar", "callback_data": f"cancel_engage:{engage_id}"}]
+                                    ]
+                                }
                             edit_telegram_message(
                                 msg_id,
-                                f"🎯 *Post do LinkedIn Identificado:*\n\n"
+                                f"🎯 *Post Identificado:*\n\n"
                                 f"👤 *Autor:* {item['author']}\n"
                                 f"📝 *Trecho do Post:* _{item['text'][:140]}..._\n\n"
                                 f"💬 *Nova Sugestão de Comentário:*\n"
@@ -499,6 +710,15 @@ async def run_telegram_loop(pw_manager):
                         engage_id = cb_data.split(":", 1)[1]
                         pending_engagements.pop(engage_id, None)
                         edit_telegram_message(msg_id, "❌ *Ação cancelada. O post não foi curtido nem comentado.*")
+
+                    # --- NAVEGAÇÃO DO RADAR DE IA ---
+                    elif cb_data == "next_radar":
+                        await present_next_radar_opportunity(msg_id)
+
+                    elif cb_data == "cancel_radar":
+                        pending_radar_queue.pop(ADMIN_CHAT_ID, None)
+                        edit_telegram_message(msg_id, "❌ *Sessão do Radar encerrada.*")
+
 
                     # --- APROVAR RESPOSTA A COMENTÁRIO EM POST PRÓPRIO ---
                     elif cb_data.startswith("approve_reply:"):
@@ -665,6 +885,10 @@ async def run_telegram_loop(pw_manager):
                                 f"• *n8n:* ✅ Online na porta 5678\n\n"
                                 f"_Sessão ativa e operacional._"
                             )
+                        elif action == "radar":
+                            await handle_radar_scan(pw_manager, msg_id)
+                        elif action == "leaders":
+                            await handle_list_leaders(msg_id)
                         elif action == "help":
                             edit_telegram_message(msg_id, HELP_TEXT)
 
@@ -714,6 +938,22 @@ async def run_telegram_loop(pw_manager):
 
                     elif text.startswith("/visitantes") or text.startswith("/quemviu"):
                         await handle_profile_views()
+
+                    elif text.startswith("/radar"):
+                        await handle_radar_scan(pw_manager)
+
+                    elif text.startswith("/lideres") or text.startswith("/leaders"):
+                        await handle_list_leaders()
+
+                    elif text.startswith("/adicionarlider"):
+                        parts = text.split()
+                        if len(parts) > 1 and "linkedin.com/in/" in parts[1]:
+                            await handle_add_leader(parts[1].strip())
+                        else:
+                            send_telegram_message(
+                                "💡 *Envie a URL do perfil após o comando:*\n"
+                                "Exemplo: `/adicionarlider https://www.linkedin.com/in/arthur-gurgel`"
+                            )
 
                     elif text.startswith("/postar"):
                         send_telegram_message("💡 *Dica:* Para criar um novo post, use o comando `/post <sua ideia>`!")
