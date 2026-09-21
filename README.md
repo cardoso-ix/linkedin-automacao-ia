@@ -8,11 +8,12 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 
 ## Destaques da Versão 2.0
 
-* **Zero Risco de Banimento:** O Playwright roda com Chromium em contexto persistente (`session/profile`), preservando cookies de autenticação reais, com emulação completa de hardware e cabeçalhos reais.
-* **Anti-IA Editorial Rigoroso:** Configurado no [CONTEXT.md](CONTEXT.md) com proibição de emojis corporativos saturados, travessões artificiais (`—`) e fechamentos apelativos.
+* **Engajamento Inteligente via Link (Curtir & Comentar sob Demanda):** Cole o link de qualquer post do LinkedIn no Telegram (`linkedin.com/posts/...` ou `lnkd.in/...`). O robô acessa a publicação pelo Playwright, lê o conteúdo e o autor, o DeepSeek v4.1 gera um comentário técnico sem clichês, e você aprova a curtida e o envio com 1 toque no botão `[✅ Curtir e Comentar Post]`.
+* **Zero Risco de Banimento:** O Playwright roda com Chromium em contexto persistente (`session/profile`), preservando cookies de autenticação reais, com emulação completa de hardware e digitação humanizada com atrasos variáveis.
+* **Anti-IA Editorial Rigoroso:** Configurado no [CONTEXT.md](CONTEXT.md) com proibição de emojis corporativos saturados, travessões artificiais (`—`), listas automáticas e fechamentos apelativos.
 * **Dupla Proposta Inteligente (`/post`):** Cada comando gera simultaneamente uma variação de *Storytelling & Bastidores de Produção* e outra de *Arquitetura & Engenharia*, permitindo aprovação com 1 clique no Telegram.
 * **Gerador de Prompts para Meta AI:** prompts calibrados para imagens panorâmicas 16:9 em estética dark mode com diagramas de processos e infográficos técnicos **100% em Português do Brasil (PT-BR)**.
-* **Monitor de Comentários Human-in-the-Loop:** n8n a cada 30 minutos + DeepSeek v4.1 sugerindo réplicas técnicas inteligentes para aprovação com botões interativos no Telegram.
+* **Monitor de Comentários Human-in-the-Loop:** n8n a cada 30 minutos + DeepSeek v4.1 sugerindo réplicas técnicas inteligentes para novos comentários nos seus posts com aprovação no Telegram.
 * **Monitor de Visitantes do Perfil (LinkedIn Premium):** n8n a cada 4 horas escaneando visualizações de perfil, classificando recrutadores e tomadores de decisão, e sugerindo abordagens elegantes com link direto.
 
 ---
@@ -32,8 +33,9 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 |  Bridge LinkedIn (FastAPI)    |             |          Servidor n8n         |
 |  - Playwright + Xvfb          |             |  - Monitor Comentários (30m)  |
 |  - Sessão persistente         |             |  - Monitor Visitantes (4h)    |
-|  - Endpoints REST             |<----------->|  - DeepSeek v4.1 Integration  |
-|  - Telegram Bot Daemon        |             |  - Deduplicação de alertas    |
+|  - Análise & Engajamento Links|<----------->|  - DeepSeek v4.1 Integration  |
+|  - Endpoints REST             |             |  - Deduplicação de alertas    |
+|  - Telegram Bot Daemon        |             |                               |
 +-------------------------------+             +-------------------------------+
               |
               v
@@ -45,10 +47,11 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 
 ---
 
-## Comandos do Bot no Telegram
+## Interações e Comandos no Telegram
 
-| Comando | Descrição |
-|---------|-----------|
+| Comando / Ação | O que faz na prática |
+|----------------|----------------------|
+| **Colar link do post** (`lnkd.in` ou `linkedin.com/posts/...`) | **Lê o post, autor e contexto pelo Playwright ➔ DeepSeek v4.1 gera comentário perspicaz ➔ Bot exibe prévia com botões `[✅ Curtir e Comentar Post]`, `[🔄 Gerar Outra Opção]` e `[❌ Cancelar]`. Ao aprovar, o robô curte e publica no LinkedIn automaticamente.** |
 | `/menu` | Abre o painel interativo de botões para ações rápidas com 1 toque. |
 | `/post <tema>` | Gera 2 variações completas de post + prompt de imagem para o Meta AI. |
 | `/visitantes` | Consulta sob demanda os visitantes recentes do seu perfil (LinkedIn Premium). |
@@ -80,6 +83,7 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 ├── workflows/
 │   ├── linkedin_comment_monitor.json       # Workflow n8n de comentários
 │   └── linkedin_profile_views_monitor.json # Workflow n8n de visitantes Premium
+├── legacy/                       # Códigos e docs legados arquivados
 └── scripts/
     └── vps_client.py             # Cliente seguro de automação e deploy via SSH/SFTP
 ```
