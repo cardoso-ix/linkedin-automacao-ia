@@ -90,3 +90,25 @@ Este é o fluxo mais rápido e frequente para construir autoridade diária no Li
 2. Filtra visitantes inéditos via `seen_viewers.json` para evitar notificações repetidas.
 3. O DeepSeek v4.1 elabora abordagem de 2 frases conectando o background do visitante a automações e IA.
 4. Notificação detalhada enviada no Telegram destacando recrutadores e tomadores de decisão com link de 1 clique para o perfil.
+
+---
+
+### 5. Ver Tela do Robô em Tempo Real (`/tela`, `/print` ou Botão no Menu)
+
+1. Eduardo envia `/tela` (ou clica no botão `[📸 Ver Tela do Robô (Print ao Vivo)]` no `/menu`).
+2. O bot envia mensagem de status imediata: *"Capturando tela ao vivo do navegador no servidor..."*.
+3. O daemon do Telegram aciona o Playwright Manager na sessão ativa (`page.screenshot(type="png")`) sem interromper processos em andamento.
+4. O binário PNG é empacotado via multipart e enviado via Telegram Bot API (`sendPhoto`).
+5. A foto é entregue em alta resolução 1080p acompanhada do título da página, URL atual e status de autenticação.
+6. A mensagem de origem do menu é atualizada com botões para `[⚡ Reabrir Menu Principal]` ou `[📸 Tirar Novo Print]`.
+
+---
+
+### 6. Central de Notificações de Erros e Alertas Críticos (n8n + Telegram)
+
+1. Os workflows produtivos do n8n (`LinkedIn Comments Monitor` e `LinkedIn Profile Views Monitor`) possuem a configuração `settings.errorWorkflow = "ErrTr1gg3r999999"`.
+2. Se qualquer nó falhar (ex: token expirado, instabilidade de rede ou DOM alterado no LinkedIn), o n8n intercepta a exceção antes de abortar silenciosamente.
+3. O workflow `Hermes - Notificador de Erros Telegram` é disparado via nó nativo `n8n-nodes-base.errorTrigger`.
+4. Uma requisição POST interna é enviada para `http://linkedin-bridge:8000/notify/error` contendo nome do workflow, nó que falhou, ID de execução e mensagem de erro.
+5. A bridge formata um alerta prioritário visual com bloco de código e envia instantaneamente ao Telegram de Eduardo.
+6. Eduardo pode a qualquer momento testar este canal de forma preventiva usando o comando `/testealerta` ou o botão `[🚨 Testar Notificação de Erro]` no `/menu`.

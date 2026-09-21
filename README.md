@@ -16,6 +16,8 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 * **Monitor de Comentários Human-in-the-Loop:** n8n a cada 30 minutos + DeepSeek v4.1 sugerindo réplicas técnicas inteligentes para novos comentários nos seus posts com aprovação no Telegram.
 * **Monitor de Visitantes do Perfil (LinkedIn Premium):** n8n a cada 4 horas escaneando visualizações de perfil, classificando recrutadores e tomadores de decisão, e sugerindo abordagens elegantes com link direto.
 * **Governança & Observabilidade com Coolify v4:** Gestão centralizada dos containers Docker na VPS HostGator, com métricas de CPU/RAM em tempo real, checagens nativas de saúde (`healthcheck`), proxy reverso Traefik v3.7 e isolamento em múltiplos ambientes de projetos.
+* **📸 Print ao Vivo do Robô (`/tela`):** Captura instantânea em 1080p da sessão ativa do Chromium no servidor direto para o chat do Telegram, com status da URL e botões interativos para reabertura de menu ou nova foto.
+* **🚨 Central de Alertas Críticos no Telegram:** Interceptação automática de falhas via nó `errorTrigger` no n8n direcionada para o endpoint `/notify/error` do bridge, avisando você imediatamente no celular se algum workflow quebrar.
 
 ---
 
@@ -62,9 +64,11 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 |----------------|----------------------|
 | **Colar link do post** (`lnkd.in` ou `linkedin.com/posts/...`) | **Lê o post, autor e contexto pelo Playwright ➔ DeepSeek v4.1 gera comentário perspicaz ➔ Bot exibe prévia com botões `[✅ Curtir e Comentar Post]`, `[🔄 Gerar Outra Opção]` e `[❌ Cancelar]`. Ao aprovar, o robô curte e publica no LinkedIn automaticamente.** |
 | `/menu` | Abre o painel interativo de botões para ações rápidas com 1 toque. |
+| `/tela` (ou `/print`) | Tira um print 1080p em tempo real da tela do navegador no servidor e envia no chat. |
 | `/post <tema>` | Gera 2 variações completas de post + prompt de imagem para o Meta AI. |
 | `/visitantes` | Consulta sob demanda os visitantes recentes do seu perfil (LinkedIn Premium). |
 | `/status` | Diagnóstico de saúde da sessão do LinkedIn, IA DeepSeek e servidor. |
+| `/testealerta` | Dispara um teste ponta a ponta do canal de notificações de falhas críticas. |
 | `/ajuda` | Manual de instruções e orientações operacionais. |
 
 ---
@@ -91,10 +95,13 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 │   └── requirements.txt          # Dependências Python
 ├── workflows/
 │   ├── linkedin_comment_monitor.json       # Workflow n8n de comentários
-│   └── linkedin_profile_views_monitor.json # Workflow n8n de visitantes Premium
+│   ├── linkedin_profile_views_monitor.json # Workflow n8n de visitantes Premium
+│   └── n8n_error_handler.json              # Workflow n8n interceptor e notificador de erros
 ├── legacy/                       # Códigos e docs legados arquivados
 └── scripts/
-    └── vps_client.py             # Cliente seguro de automação e deploy via SSH/SFTP
+    ├── vps_client.py             # Cliente seguro de automação e deploy via SSH/SFTP
+    ├── deploy_features.py        # Script de deploy e sincronização de containers
+    └── verify_deploy.py          # Verificador automatizado de saúde e testes HTTP
 ```
 
 ---
