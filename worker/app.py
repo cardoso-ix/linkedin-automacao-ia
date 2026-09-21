@@ -8,7 +8,7 @@ import re
 from typing import Optional, List, Dict
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Response
 from pydantic import BaseModel
 from playwright.async_api import async_playwright, Playwright, BrowserContext, Page
 
@@ -129,9 +129,64 @@ class PostEngageRequest(BaseModel):
     comment_text: str
     like_first: bool = True
 
+class ErrorNotificationRequest(BaseModel):
+    workflow_name: Optional[str] = "Workflow Desconhecido"
+    node_name: Optional[str] = None
+    error_message: Optional[str] = "Erro não especificado"
+    execution_id: Optional[str] = None
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "linkedin-bridge"}
+
+@app.get("/screenshot")
+async def get_screenshot():
+    """Captura a tela atual do Playwright e retorna a imagem PNG em tempo real"""
+    try:
+        page = await pw_manager.get_page()
+        shot = await page.screenshot(type="png", full_page=False)
+        return Response(content=shot, media_type="image/png")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao capturar tela: {e}")
+
+@app.get("/screenshot/telegram")
+@app.post("/screenshot/telegram")
+async def trigger_screenshot_to_telegram():
+    """Captura a tela atual do navegador e envia diretamente para o Telegram do usuario"""
+    from telegram_bot import handle_screenshot
+    await handle_screenshot(pw_manager)
+    return {"status": "screenshot_sent_to_telegram"}
+
+@app.post("/notify/error")
+async def notify_error(req: ErrorNotificationRequest):
+    """Recebe alertas de erro do n8n ou outros módulos e envia notificação imediata no Telegram"""
+    from telegram_bot import send_telegram_message
+    lines = [
+        "🚨 *ALERTA DE FALHA NO SISTEMA*",
+        "",
+        f"• *Workflow / Origem:* `{req.workflow_name}`",
+    ]
+    if req.node_name:
+        lines.append(f"• *Etapa / Nó:* `{req.node_name}`")
+    if req.execution_id:
+        lines.append(f"• *Execução ID:* `{req.execution_id}`")
+    lines.extend([
+        f"• *Detalhes do Erro:*",
+        f"```{req.error_message[:400]}```",
+        "",
+        "⚠️ _Acesse o painel do n8n para auditar a execução detalhada._"
+    ])
+    text = "\n".join(lines)
+    send_telegram_message(text)
+    return {"status": "success", "alert_dispatched": True}
+
+@app.get("/menu")
+@app.post("/menu")
+async def dispatch_menu():
+    """Envia o menu interativo com os novos botoes diretamente ao Telegram do Eduardo"""
+    from telegram_bot import send_main_menu
+    send_main_menu()
+    return {"status": "menu_dispatched"}
 
 @app.get("/status")
 async def status():

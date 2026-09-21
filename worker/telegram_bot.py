@@ -71,6 +71,25 @@ def edit_telegram_message(message_id: int, text: str, reply_markup: Optional[dic
     except Exception as e:
         print(f"[!] Erro ao editar mensagem Telegram: {e}")
 
+def send_telegram_photo(photo_bytes: bytes, caption: str = "") -> bool:
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+    data = {
+        "chat_id": ADMIN_CHAT_ID,
+        "caption": caption,
+        "parse_mode": "Markdown"
+    }
+    files = {
+        "photo": ("screenshot.png", photo_bytes, "image/png")
+    }
+    try:
+        r = requests.post(url, data=data, files=files, timeout=35)
+        if r.status_code == 200:
+            return True
+        print(f"[!] Falha ao enviar foto Telegram: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"[!] Erro ao enviar foto Telegram: {e}")
+    return False
+
 def call_deepseek(prompt: str, mode: str = "engage") -> str:
     """
     mode:
@@ -239,10 +258,68 @@ HELP_TEXT = (
     "• Se desejar imagem, basta enviar a foto logo em seguida e confirmar!\n\n"
     "3️⃣ *Comandos Rápidos:*\n"
     "• `/menu` — Abre o painel com botões interativos de ação rápida\n"
+    "• `/tela` — Tira um print em tempo real da tela do navegador no servidor\n"
     "• `/visitantes` — Lista quem visitou seu perfil recentemente no LinkedIn Premium\n"
     "• `/status` — Checa a saúde da sessão do LinkedIn, IA e servidor\n"
+    "• `/testealerta` — Dispara teste do canal de alertas críticos no Telegram\n"
     "• `/ajuda` — Mostra este guia de instruções"
 )
+
+async def handle_screenshot(pw_manager, msg_id: Optional[int] = None):
+    initial_text = "📸 *Capturando tela ao vivo do navegador no servidor...*"
+    if msg_id:
+        edit_telegram_message(msg_id, initial_text)
+    else:
+        send_telegram_message(initial_text)
+
+    try:
+        page = await pw_manager.get_page()
+        shot = await page.screenshot(type="png", full_page=False)
+        current_url = page.url
+        title = await page.title()
+        caption = (
+            f"📸 *Tela ao Vivo do LinkedIn:*\n\n"
+            f"• *Título:* {title}\n"
+            f"• *URL:* `{current_url[:65]}`\n"
+            f"• *Status:* {'Logado' if 'feed' in current_url else 'Verificar'}"
+        )
+        success = await asyncio.to_thread(send_telegram_photo, shot, caption)
+        if success:
+            if msg_id:
+                keyboard = {
+                    "inline_keyboard": [
+                        [{"text": "⚡ Reabrir Menu Principal", "callback_data": "menu_action:reopen"}],
+                        [{"text": "📸 Tirar Novo Print", "callback_data": "menu_action:screenshot"}]
+                    ]
+                }
+                edit_telegram_message(msg_id, "✅ *Captura de tela enviada com sucesso acima!*", reply_markup=keyboard)
+        else:
+            send_telegram_message("❌ *Não foi possível enviar a imagem no Telegram.*")
+    except Exception as e:
+        send_telegram_message(f"❌ *Erro ao capturar tela:* {e}")
+
+async def handle_test_error(msg_id: Optional[int] = None):
+    initial_text = "🧪 *Emitindo teste do sistema de alertas críticos...*"
+    if msg_id:
+        edit_telegram_message(msg_id, initial_text)
+    else:
+        send_telegram_message(initial_text)
+
+    from app import notify_error, ErrorNotificationRequest
+    test_req = ErrorNotificationRequest(
+        workflow_name="Validador do Ecossistema",
+        node_name="Canal de Alertas Telegram",
+        error_message="Simulação de exceção: Canal de alertas críticos e monitoramento via Telegram funcionando perfeitamente.",
+        execution_id=uuid.uuid4().hex[:6].upper()
+    )
+    await notify_error(test_req)
+    if msg_id:
+        keyboard = {
+            "inline_keyboard": [
+                [{"text": "⚡ Voltar ao Menu", "callback_data": "menu_action:reopen"}]
+            ]
+        }
+        edit_telegram_message(msg_id, "✅ *Alerta de teste disparado com sucesso acima!*", reply_markup=keyboard)
 
 async def handle_profile_views(msg_id: Optional[int] = None):
     initial_text = "🔍 *Consultando visitantes recentes no LinkedIn Premium...*"
@@ -301,8 +378,10 @@ def send_main_menu(message_id: Optional[int] = None):
     keyboard = {
         "inline_keyboard": [
             [{"text": "✍️ Criar Novo Post", "callback_data": "menu_action:post"}],
+            [{"text": "📸 Ver Tela do Robô (Print ao Vivo)", "callback_data": "menu_action:screenshot"}],
             [{"text": "👀 Quem Viu Meu Perfil (Premium)", "callback_data": "menu_action:views"}],
             [{"text": "📊 Checar Status da Conexão", "callback_data": "menu_action:status"}],
+            [{"text": "🚨 Testar Notificação de Erro", "callback_data": "menu_action:test_error"}],
             [{"text": "💡 Guia de Utilização", "callback_data": "menu_action:help"}]
         ]
     }
@@ -320,7 +399,9 @@ async def run_telegram_loop(pw_manager):
         "🤖 *Assistente LinkedIn Conectado e Operacional!*\n\n"
         "Menu limpo e configurado com os recursos essenciais:\n"
         "• ✍️ `/post <ideia>` — Criar publicação com ou sem foto\n"
+        "• 📸 `/tela` — Ver tela do robô em tempo real\n"
         "• 📊 `/status` — Verificar saúde da conexão e serviços\n"
+        "• 🚨 `/testealerta` — Testar canal de notificações de erro\n"
         "• 💡 `/ajuda` — Guia prático de utilização\n"
         "• ⚡ `/menu` — Painel interativo com botões rápidos\n\n"
         "🔗 _Dica: Você também pode colar qualquer link do LinkedIn aqui para curtir e comentar._"
@@ -564,6 +645,12 @@ async def run_telegram_loop(pw_manager):
                                 "`/post Como estruturamos agentes de IA autônomos no n8n`\n\n"
                                 "_O DeepSeek v4.1 irá redigir o texto e você poderá revisar ou anexar foto antes de publicar._"
                             )
+                        elif action == "screenshot":
+                            await handle_screenshot(pw_manager, msg_id)
+                        elif action == "test_error":
+                            await handle_test_error(msg_id)
+                        elif action == "reopen":
+                            send_main_menu(msg_id)
                         elif action == "views":
                             await handle_profile_views(msg_id)
                         elif action == "status":
@@ -618,6 +705,12 @@ async def run_telegram_loop(pw_manager):
                             f"• *DeepSeek:* ✅ Ativo (OpenCode Go v4.1)\n"
                             f"• *n8n:* ✅ Online na porta 5678"
                         )
+
+                    elif text.startswith("/tela") or text.startswith("/print") or text.startswith("/screenshot"):
+                        await handle_screenshot(pw_manager)
+
+                    elif text.startswith("/testealerta") or text.startswith("/alerta"):
+                        await handle_test_error()
 
                     elif text.startswith("/visitantes") or text.startswith("/quemviu"):
                         await handle_profile_views()

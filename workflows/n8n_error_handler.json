@@ -1,0 +1,46 @@
+{
+  "id": "ErrTr1gg3r999999",
+  "name": "Hermes - Notificador de Erros Telegram",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger-1",
+      "name": "Disparo de Erro",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://linkedin-bridge:8000/notify/error",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"{{ $json.workflow.name }}\",\n  \"node_name\": \"{{ $json.execution.lastNodeExecuted }}\",\n  \"error_message\": \"{{ $json.execution.error.message }}\",\n  \"execution_id\": \"{{ $json.execution.id }}\"\n}",
+        "options": {}
+      },
+      "id": "http-post-error-bridge",
+      "name": "Enviar Alerta via Bridge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Disparo de Erro": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta via Bridge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
