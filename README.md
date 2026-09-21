@@ -116,3 +116,10 @@ O objetivo central é alavancar impressões, autoridade profissional e atração
 ## Licença e Segurança
 
 Este repositório não contém senhas, chaves de API ou cookies de sessão. Todas as credenciais são injetadas estritamente por variáveis de ambiente locais ou arquivos `.env` ignorados pelo controle de versão.
+
+---
+
+## Créditos & Engenharia Agêntica
+
+* **Autor & Engenheiro Responsável:** [Eduardo Cardoso](https://www.linkedin.com/in/eduardo-cardoso-213a02267) · [Portfólio](https://cardoso-ix.github.io/Portifolio/)
+* **Pair Programming & Engenharia Agêntica:** Desenvolvido em conjunto com o **Google Antigravity (AGY)** — DeepMind Advanced Agentic Coding Framework, adotando práticas rigorosas de engenharia de software (TDD, Architecture Decision Records, isolamento de segredos e revisão de conformidade anti-IA).
